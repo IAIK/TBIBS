@@ -9,19 +9,13 @@ Secure Delegation for TLS. In 2020 Cloud Computing Security Workshop
 14 pages. https://doi.org/10.1145/3411495.3421362
 ```
 
+
 ## Repository Structure
 
 * `ctbibs`: Relic-based benchmark for TBIBS 
 
 (See respective `README.md` for details and license.)
 
-
-## BibTeX
-
-
-```bibtex
-
-```
 
 ## References
 
