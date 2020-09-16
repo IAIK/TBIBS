@@ -29,9 +29,11 @@
 7. add libraries in lib/ to the classpath
 
 8. Add following alias to /etc/hosts:
+```
     127.0.0.1    DEMO-CA
     127.0.0.1    DEMO-CDN
     127.0.0.1    DEMO-SERVER
+```
 
 9. Run src/master/MasterServer.java first to create a keystore
  (you can choose the server hostname arbitrarily)
