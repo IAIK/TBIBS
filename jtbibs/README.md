@@ -1,5 +1,7 @@
 # TBIBS for TLS in Java
 
+Java-based TBIBS signature implementation and TBIBS TLS-integration
+
 ### Setup
 1. Open the maven project using the pom.xml
 
