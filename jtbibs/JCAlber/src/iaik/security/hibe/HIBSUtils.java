@@ -3,7 +3,7 @@ package iaik.security.hibe;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-public class HIBEUtils {
+public class HIBSUtils {
 
     public enum EpochGranularity {
         Year,

@@ -1,21 +1,19 @@
 package iaik.security.hibe;
 
-import iaik.security.ssl.ServerNameList;
-
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class HIBEAlgorithmParameterSpec implements AlgorithmParameterSpec {
+public class HIBSAlgorithmParameterSpec implements AlgorithmParameterSpec {
 
     List<byte[]> mIDs = new ArrayList<>();
 
-    public HIBEAlgorithmParameterSpec() {
+    public HIBSAlgorithmParameterSpec() {
     }
 
 
-    public HIBEAlgorithmParameterSpec addDelegateIDs(byte[]... ids){
+    public HIBSAlgorithmParameterSpec addDelegateIDs(byte[]... ids){
         mIDs.addAll(Arrays.asList(ids));
         return this;
     }

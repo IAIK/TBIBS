@@ -3,8 +3,8 @@ package master.benchmark;
 import Entities.PublicParams;
 import Entities.SecurityParams;
 import HIBE.Hibe;
-import iaik.security.hibe.HIBEProvider;
-import iaik.security.hibe.HIBEcurve;
+import iaik.security.hibe.HIBSProvider;
+import iaik.security.hibe.HIBScurve;
 import master.HibeCommon;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -25,12 +25,12 @@ public class HashBench extends ABenchmark{
   @Setup(Level.Trial)
   public void setUp() throws Exception {
     System.out.println("main setup");
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
     HibeCommon.sDebug = false;
     LogManager.shutdown();
 
     mHibe = new Hibe();
-    mPP = mHibe.setUp(1, new SecurityParams(HIBEcurve.BN_P461));
+    mPP = mHibe.setUp(1, new SecurityParams(HIBScurve.BN_P461));
   }
   @Setup(Level.Iteration)
   public void setUp2() throws Exception {

@@ -2,10 +2,10 @@ package master.benchmark;
 
 import Entities.SecurityParams;
 import iaik.security.ec.provider.ECCelerate;
-import iaik.security.hibe.HIBEAlgorithmParameterSpec;
-import iaik.security.hibe.HIBEKeyPairParamSpec;
-import iaik.security.hibe.HIBEProvider;
-import iaik.security.hibe.HIBEcurve;
+import iaik.security.hibe.HIBSAlgorithmParameterSpec;
+import iaik.security.hibe.HIBSKeyPairParamSpec;
+import iaik.security.hibe.HIBSProvider;
+import iaik.security.hibe.HIBScurve;
 import master.HibeCommon;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -15,7 +15,7 @@ import org.openjdk.jmh.runner.RunnerException;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
 
-import static iaik.security.hibe.HIBEcurve.BN_P461;
+import static iaik.security.hibe.HIBScurve.BN_P461;
 
 @State(Scope.Benchmark)
 public class VerifyBench extends ABenchmark{
@@ -30,7 +30,7 @@ public class VerifyBench extends ABenchmark{
   public void setUp() throws Exception {
     System.out.println("main setup");
     Security.addProvider(ECCelerate.getInstance());
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
     HibeCommon.sDebug = false;
     LogManager.shutdown();
   }
@@ -39,31 +39,31 @@ public class VerifyBench extends ABenchmark{
   public void tearDown() throws Exception {
   }
 
-  private static void generalSetup(HIBEcurve c) throws Exception {
+  private static void generalSetup(HIBScurve c) throws Exception {
     System.out.println("setup verify");
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("HIBE");
-    kpg.initialize(HIBEKeyPairParamSpec.create(1, new SecurityParams(c)));
+    kpg.initialize(HIBSKeyPairParamSpec.create(1, new SecurityParams(c)));
     mKp = kpg.generateKeyPair();
   }
 
-  public static void hibeSetupVerify(HIBEcurve c) throws Exception {
+  public static void hibeSetupVerify(HIBScurve c) throws Exception {
     generalSetup(c);
 
   }
 
-  public void hibeSign(HIBEcurve c) throws Exception {
+  public void hibeSign(HIBScurve c) throws Exception {
     System.out.println("sign");
     mSig = Signature.getInstance("HIBE");
-    mSig.setParameter(new HIBEAlgorithmParameterSpec());
+    mSig.setParameter(new HIBSAlgorithmParameterSpec());
     mSig.initSign(mKp.getPrivate());
     mSig.update(mSignData);
     mSignature = mSig.sign();
   }
 
-  public void hibeVerify(HIBEcurve c) throws Exception {
+  public void hibeVerify(HIBScurve c) throws Exception {
     System.out.println("verify");
     mSig = Signature.getInstance("HIBE");
-    mSig.setParameter(new HIBEAlgorithmParameterSpec());
+    mSig.setParameter(new HIBSAlgorithmParameterSpec());
     mSig.initVerify(mKp.getPublic());
     mSig.update(mSignData);
     if (!mSig.verify(mSignature))

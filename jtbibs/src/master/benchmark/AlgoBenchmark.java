@@ -16,7 +16,7 @@ import java.security.Signature;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
 
-import static iaik.security.hibe.HIBEcurve.*;
+import static iaik.security.hibe.HIBScurve.*;
 
 @State(Scope.Benchmark)
 public class AlgoBenchmark extends ABenchmark {
@@ -33,7 +33,7 @@ public class AlgoBenchmark extends ABenchmark {
   public void setUp() throws Exception {
     System.out.println("main setup");
     Security.addProvider(ECCelerate.getInstance());
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
     HibeCommon.sDebug = false;
     LogManager.shutdown();
   }
@@ -42,40 +42,40 @@ public class AlgoBenchmark extends ABenchmark {
   public void tearDown() throws Exception {
   }
 
-  public static void hibeSetupSign(HIBEcurve c) throws Exception {
+  public static void hibeSetupSign(HIBScurve c) throws Exception {
     System.out.println("setup sign");
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("HIBE");
-    kpg.initialize(HIBEKeyPairParamSpec.create(1, new SecurityParams(c)));
+    kpg.initialize(HIBSKeyPairParamSpec.create(1, new SecurityParams(c)));
     mKp = kpg.generateKeyPair();
   }
 
-  public static void hibeSetupVerify(HIBEcurve c) throws Exception {
+  public static void hibeSetupVerify(HIBScurve c) throws Exception {
     System.out.println("setup verify");
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("HIBE");
-    kpg.initialize(HIBEKeyPairParamSpec.create(9, new SecurityParams(c)));
+    kpg.initialize(HIBSKeyPairParamSpec.create(9, new SecurityParams(c)));
     mKp = kpg.generateKeyPair();
     for (int i = 0; i < 9; i++) {
       mSig = Signature.getInstance("HIBE");
-      mSig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs((i == 0)? new byte[][]{} : Arrays.asList(mSignData2).subList(0,i).toArray(new byte[][]{})));
-      mSig.initSign((i == 0)? mKp.getPrivate() : new HIBEDelPrivKey(mSignature));
+      mSig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs((i == 0)? new byte[][]{} : Arrays.asList(mSignData2).subList(0,i).toArray(new byte[][]{})));
+      mSig.initSign((i == 0)? mKp.getPrivate() : new HIBSDelPrivKey(mSignature));
       mSig.update(mSignData2[i]);
       mSignature = mSig.sign();
     }
   }
 
-  public void hibeSign(HIBEcurve c) throws Exception {
+  public void hibeSign(HIBScurve c) throws Exception {
     System.out.println("sign");
     mSig = Signature.getInstance("HIBE");
-    mSig.setParameter(new HIBEAlgorithmParameterSpec());
+    mSig.setParameter(new HIBSAlgorithmParameterSpec());
     mSig.initSign(mKp.getPrivate());
     mSig.update(mSignData);
     mSignature = mSig.sign();
   }
 
-  public void hibeVerify(HIBEcurve c) throws Exception {
+  public void hibeVerify(HIBScurve c) throws Exception {
     System.out.println("verify");
     mSig = Signature.getInstance("HIBE");
-    mSig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(Arrays.asList(mSignData2).subList(0,8).toArray(new byte[][]{})));
+    mSig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(Arrays.asList(mSignData2).subList(0,8).toArray(new byte[][]{})));
     mSig.initVerify(mKp.getPublic());
     mSig.update(mSignData2[8]);
     if (!mSig.verify(mSignature))
@@ -244,32 +244,32 @@ public class AlgoBenchmark extends ABenchmark {
 //  }
 //
 //
-////  //------------- ECDSA -----------------------------------
-//@State(Scope.Benchmark)
-//public static class State_ECDSA_Sign {
-//  @Setup(Level.Iteration)
-//  public void setup() throws Exception {
-//    ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
-//    setup_sign("EC", ecSpec);
-//  }
-//}
-//  @Benchmark
-//  public void ECDSA_sign(State_ECDSA_Sign s) throws Exception {
-//    sign("SHA256withECDSA");
-//  }
-//
-//  @State(Scope.Benchmark)
-//  public static class State_ECDSA_Verify {
-//    @Setup(Level.Iteration)
-//    public void setup() throws Exception {
-//      ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
-//      setup_verify("EC", "SHA256withECDSA", ecSpec);
-//    }
-//  }
-//  @Benchmark
-//  public void ECDSA_verify(State_ECDSA_Verify s) throws Exception {
-//    verify("SHA256withECDSA");
-//  }
+//  //------------- ECDSA -----------------------------------
+@State(Scope.Benchmark)
+public static class State_ECDSA_Sign {
+  @Setup(Level.Iteration)
+  public void setup() throws Exception {
+    ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+    setup_sign("EC", ecSpec);
+  }
+}
+  @Benchmark
+  public void ECDSA_sign(State_ECDSA_Sign s) throws Exception {
+    sign("SHA256withECDSA");
+  }
+
+  @State(Scope.Benchmark)
+  public static class State_ECDSA_Verify {
+    @Setup(Level.Iteration)
+    public void setup() throws Exception {
+      ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+      setup_verify("EC", "SHA256withECDSA", ecSpec);
+    }
+  }
+  @Benchmark
+  public void ECDSA_verify(State_ECDSA_Verify s) throws Exception {
+    verify("SHA256withECDSA");
+  }
 
 
   public static void main(String[] args) throws RunnerException {

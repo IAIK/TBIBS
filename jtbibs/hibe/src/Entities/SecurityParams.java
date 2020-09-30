@@ -1,18 +1,18 @@
 package Entities;
 
-import iaik.security.hibe.HIBEcurve;
+import iaik.security.hibe.HIBScurve;
 
 public class SecurityParams {
-  private HIBEcurve mCurve;
+  private HIBScurve mCurve;
 
   public SecurityParams() {
   }
 
-  public SecurityParams(HIBEcurve c) {
+  public SecurityParams(HIBScurve c) {
     mCurve = c;
   }
 
-  public HIBEcurve getCurve() {
+  public HIBScurve getCurve() {
     return mCurve;
   }
 }

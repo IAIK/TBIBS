@@ -1,3 +1,5 @@
+package demo;
+
 import Entities.SecurityParams;
 import iaik.security.hibe.*;
 import org.apache.log4j.Logger;
@@ -14,11 +16,11 @@ public class HIBEStandardTest {
 
   @Test
   public void WithoutDelegation() {
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
 
     try {
 
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(1, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(1, new SecurityParams());
 
       KeyPairGenerator kg = KeyPairGenerator.getInstance("HIBE");
       kg.initialize(params);
@@ -68,35 +70,35 @@ public class HIBEStandardTest {
 
   @Test
   public void DelegationTest() {
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
     byte[] delData = "02.02.2020".getBytes();
     byte[] signData = "Data to be signed.".getBytes();
 
     try {
 
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(2, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(2, new SecurityParams());
 
-      KeyPairGenerator kg = KeyPairGenerator.getInstance("HIBE");
+      KeyPairGenerator kg = KeyPairGenerator.getInstance("HIBS");
       kg.initialize(params);
       KeyPair kp = kg.generateKeyPair();
 
-      Signature sig = Signature.getInstance("HIBE");
+      Signature sig = Signature.getInstance("HIBS");
 
       //delegate signing
       sig.initSign(kp.getPrivate());
       sig.update(delData);
       byte[] signature = sig.sign();
-      HIBEDelPrivKey delPrivKey = new HIBEDelPrivKey(signature);
+      HIBSDelPrivKey delPrivKey = new HIBSDelPrivKey(signature);
 
       // sign signing!
-//      sig = Signature.getInstance("HIBE");
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData));
+//      sig = Signature.getInstance("HIBS");
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData));
       sig.initSign(delPrivKey);
       sig.update(signData);
       byte[] signature2 = sig.sign();
 
       //verify
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData));
       sig.initVerify(kp.getPublic());
       sig.update(signData);
       boolean isValid = sig.verify(signature2);
@@ -114,14 +116,14 @@ public class HIBEStandardTest {
 
   @Test
   public void multipleDelegationTest() {
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
     byte[] delData1 = "domain".getBytes();
     byte[] delData2 = "02.02.2020".getBytes();
     byte[] signData = "Data to be signed.".getBytes();
 
     try {
 
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(3, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(3, new SecurityParams());
 
       KeyPairGenerator kg = KeyPairGenerator.getInstance("HIBE");
       kg.initialize(params);
@@ -133,23 +135,23 @@ public class HIBEStandardTest {
       sig.initSign(kp.getPrivate());
       sig.update(delData1);
       byte[] signature1 = sig.sign();
-      HIBEDelPrivKey delPrivKey = new HIBEDelPrivKey(signature1);
+      HIBSDelPrivKey delPrivKey = new HIBSDelPrivKey(signature1);
       //delegate signing
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData1));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData1));
       sig.initSign(delPrivKey);
       sig.update(delData2);
       byte[] signature2 = sig.sign();
-      HIBEDelPrivKey delPrivKey2 = new HIBEDelPrivKey(signature2);
+      HIBSDelPrivKey delPrivKey2 = new HIBSDelPrivKey(signature2);
 
       // sign signing!
       sig = Signature.getInstance("HIBE");
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData1, delData2));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData1, delData2));
       sig.initSign(delPrivKey2);
       sig.update(signData);
       byte[] signature3 = sig.sign();
 
       //verify
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData1, delData2));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData1, delData2));
       sig.initVerify(kp.getPublic());
       sig.update(signData);
       boolean isValid = sig.verify(signature3);
@@ -167,14 +169,14 @@ public class HIBEStandardTest {
 
   @Test
   public void moreDelegationsThanExpected() {
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
     byte[] delData1 = "domain".getBytes();
     byte[] delData2 = "02.02.2020".getBytes();
     byte[] signData = "Data to be signed.".getBytes();
 
     try {
 
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(2, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(2, new SecurityParams());
 
       KeyPairGenerator kg = KeyPairGenerator.getInstance("HIBE");
       kg.initialize(params);
@@ -186,23 +188,23 @@ public class HIBEStandardTest {
       sig.initSign(kp.getPrivate());
       sig.update(delData1);
       byte[] signature1 = sig.sign();
-      HIBEDelPrivKey delPrivKey = new HIBEDelPrivKey(signature1);
+      HIBSDelPrivKey delPrivKey = new HIBSDelPrivKey(signature1);
       //delegate signing
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData1));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData1));
       sig.initSign(delPrivKey);
       sig.update(delData2);
       byte[] signature2 = sig.sign();
-      HIBEDelPrivKey delPrivKey2 = new HIBEDelPrivKey(signature2);
+      HIBSDelPrivKey delPrivKey2 = new HIBSDelPrivKey(signature2);
 
       // sign signing!
       sig = Signature.getInstance("HIBE");
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData1, delData2));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData1, delData2));
       sig.initSign(delPrivKey2);
       sig.update(signData);
       byte[] signature3 = sig.sign();
 
       //verify
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData1, delData2));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData1, delData2));
       sig.initVerify(kp.getPublic());
       sig.update(signData);
       boolean isValid = sig.verify(signature3);
@@ -227,14 +229,14 @@ public class HIBEStandardTest {
 
     @Test
     public void WrongVerifyTest () {
-      Security.addProvider(new HIBEProvider());
+      Security.addProvider(new HIBSProvider());
       byte[] delData = "02.02.2020".getBytes();
       byte[] wrongDelData = "02.02.2000".getBytes();
       byte[] signData = "Data to be signed.".getBytes();
 
       try {
 
-        HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(2, new SecurityParams());
+        HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(2, new SecurityParams());
 
         KeyPairGenerator kg = KeyPairGenerator.getInstance("HIBE");
         kg.initialize(params);
@@ -246,16 +248,16 @@ public class HIBEStandardTest {
         sig.initSign(kp.getPrivate());
         sig.update(delData);
         byte[] signature = sig.sign();
-        HIBEDelPrivKey delPrivKey = new HIBEDelPrivKey(signature);
+        HIBSDelPrivKey delPrivKey = new HIBSDelPrivKey(signature);
 
         // sign signing!
-        sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData));
+        sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData));
         sig.initSign(delPrivKey);
         sig.update(signData);
         byte[] signature2 = sig.sign();
 
         //verify
-        sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(wrongDelData)); //<--here
+        sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(wrongDelData)); //<--here
         sig.initVerify(kp.getPublic());
         sig.update(signData);
         boolean isValid = sig.verify(signature2);
@@ -273,14 +275,14 @@ public class HIBEStandardTest {
 
     @Test
     public void WrongDelegationMsgTest () {
-      Security.addProvider(new HIBEProvider());
+      Security.addProvider(new HIBSProvider());
       byte[] delData = "02.02.2020".getBytes();
       byte[] wrongDelData = "02.02.2000".getBytes();
       byte[] signData = "Data to be signed.".getBytes();
 
       try {
 
-        HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(2, new SecurityParams());
+        HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(2, new SecurityParams());
 
         KeyPairGenerator kg = KeyPairGenerator.getInstance("HIBE");
         kg.initialize(params);
@@ -292,16 +294,16 @@ public class HIBEStandardTest {
         sig.initSign(kp.getPrivate());
         sig.update(delData);
         byte[] signature = sig.sign();
-        HIBEDelPrivKey delPrivKey = new HIBEDelPrivKey(signature);
+        HIBSDelPrivKey delPrivKey = new HIBSDelPrivKey(signature);
 
         // sign signing!
-        sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(wrongDelData)); // <--here
+        sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(wrongDelData)); // <--here
         sig.initSign(delPrivKey);
         sig.update(signData);
         byte[] signature2 = sig.sign();
 
         //verify
-        sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData));
+        sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData));
         sig.initVerify(kp.getPublic());
         sig.update(signData);
         boolean isValid = sig.verify(signature2);
@@ -319,14 +321,14 @@ public class HIBEStandardTest {
 
     @Test
     public void VerifyExpectsMoreDelegations () {
-      Security.addProvider(new HIBEProvider());
+      Security.addProvider(new HIBSProvider());
       byte[] delData = "myserver".getBytes();
       byte[] del2Data = "02.02.2000".getBytes();
       byte[] signData = "Data to be signed.".getBytes();
 
       try {
 
-        HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(1, new SecurityParams());
+        HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(1, new SecurityParams());
 
         KeyPairGenerator kg = KeyPairGenerator.getInstance("HIBE");
         kg.initialize(params);
@@ -340,7 +342,7 @@ public class HIBEStandardTest {
         byte[] signature = sig.sign();
 
         //verify
-        sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData, del2Data));
+        sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData, del2Data));
         sig.initVerify(kp.getPublic());
         sig.update(signData);
         boolean isValid = sig.verify(signature);

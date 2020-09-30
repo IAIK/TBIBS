@@ -7,7 +7,7 @@ import iaik.pkcs.PKCSException;
 import iaik.pkcs.pkcs12.CertificateBag;
 import iaik.pkcs.pkcs12.KeyBag;
 import iaik.pkcs.pkcs12.PKCS12;
-import iaik.security.hibe.HIBEProvider;
+import iaik.security.hibe.HIBSProvider;
 import iaik.x509.X509Certificate;
 import org.apache.log4j.Logger;
 
@@ -81,7 +81,7 @@ public class HibeDemoUtils {
     setValid(cert);
 
     logger.info("Signing selfsigned certificate ..."); //getTBSCertificate
-    cert.sign(HIBEProvider.HIBE_ALG, kp.getPrivate());
+    cert.sign(HIBSProvider.HIBS_ALG, kp.getPrivate());
 
     return cert;
   }

@@ -8,16 +8,13 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.cert.X509Certificate;
-import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 
-import javax.security.auth.x500.X500Principal;
-
 import Entities.SecurityParams;
-import iaik.security.hibe.HIBEAlgorithmParameterSpec;
-import iaik.security.hibe.HIBEKeyPairParamSpec;
-import iaik.security.hibe.HIBEPublicKey;
-import iaik.security.hibe.HIBEUtils;
+import iaik.security.hibe.HIBSAlgorithmParameterSpec;
+import iaik.security.hibe.HIBSKeyPairParamSpec;
+import iaik.security.hibe.HIBSPublicKey;
+import iaik.security.hibe.HIBSUtils;
 import iaik.security.ssl.*;
 
 public class IaikHibeProvider extends ECCelerateProvider {
@@ -25,7 +22,7 @@ public class IaikHibeProvider extends ECCelerateProvider {
   final static String ALG_SIGNATURE_HIBE = "HIBE";
   @Override
   public SupportedEllipticCurves.NamedCurve getCurve(PublicKey publicKey) {
-    if (publicKey instanceof HIBEPublicKey){
+    if (publicKey instanceof HIBSPublicKey){
       return SupportedEllipticCurves.HIBE;
     }
     return super.getCurve(publicKey);
@@ -42,7 +39,7 @@ public class IaikHibeProvider extends ECCelerateProvider {
   public KeyPair generateECKeyPair(SupportedEllipticCurves supportedEllipticCurves, SupportedPointFormats supportedPointFormats) throws Exception {
     if (Arrays.asList(supportedEllipticCurves.getEllipticCurveList()).contains(SupportedEllipticCurves.HIBE)) {
       KeyPairGenerator kpg = KeyPairGenerator.getInstance("HIBE");
-      kpg.initialize(HIBEKeyPairParamSpec.create(3, new SecurityParams()));
+      kpg.initialize(HIBSKeyPairParamSpec.create(3, new SecurityParams()));
       return kpg.generateKeyPair();
     }
     return super.generateECKeyPair(supportedEllipticCurves, supportedPointFormats);
@@ -50,7 +47,7 @@ public class IaikHibeProvider extends ECCelerateProvider {
 
   @Override
   public byte[] encodeECPublicKey(PublicKey publicKey, SupportedPointFormats supportedPointFormats) throws Exception {
-    if (publicKey instanceof HIBEPublicKey) {
+    if (publicKey instanceof HIBSPublicKey) {
       return publicKey.getEncoded();
     }
     return super.encodeECPublicKey(publicKey, supportedPointFormats);
@@ -59,14 +56,14 @@ public class IaikHibeProvider extends ECCelerateProvider {
   @Override
   public PublicKey decodeECPublicKey(byte[] bytes, SupportedEllipticCurves.NamedCurve curve, SupportedPointFormats formats, SupportedEllipticCurves supportedCurves) throws Exception {
     if (curve.equals(SupportedEllipticCurves.HIBE)) {
-      return new HIBEPublicKey(bytes);
+      return new HIBSPublicKey(bytes);
     }
     return super.decodeECPublicKey(bytes, curve, formats, supportedCurves);
   }
 
   @Override
   public SupportedPointFormats.ECPointFormat getECPointFormat(PublicKey publicKey) {
-    if (publicKey instanceof HIBEPublicKey) {
+    if (publicKey instanceof HIBSPublicKey) {
       return SupportedPointFormats.PF_UNCOMPRESSED;
     }
     return super.getECPointFormat(publicKey);
@@ -106,8 +103,8 @@ public class IaikHibeProvider extends ECCelerateProvider {
 
       if (serverNames != null && serverNames.length != 0) {
         byte[] domain = serverNames[0].getEncodedName(); //currently the domain, but could be a subdomain for fine-grained privilege delegation
-        byte[] epoch = HIBEUtils.getEpoch(HIBEUtils.EpochGranularity.Day);
-        sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(domain, epoch));
+        byte[] epoch = HIBSUtils.getEpoch(HIBSUtils.EpochGranularity.Day);
+        sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(domain, epoch));
       } else throw new Exception("No SNI set");
 
       if (key instanceof PrivateKey) {

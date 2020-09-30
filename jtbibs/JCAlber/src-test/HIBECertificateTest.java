@@ -1,3 +1,5 @@
+package demo;
+
 import java.io.*;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -12,10 +14,10 @@ import iaik.pkcs.pkcs12.CertificateBag;
 import iaik.pkcs.pkcs12.KeyBag;
 import iaik.pkcs.pkcs12.PKCS12;
 import iaik.security.ec.provider.ECCelerate;
-import iaik.security.hibe.HIBEAlgorithmParameterSpec;
-import iaik.security.hibe.HIBEDelPrivKey;
-import iaik.security.hibe.HIBEKeyPairParamSpec;
-import iaik.security.hibe.HIBEProvider;
+import iaik.security.hibe.HIBSAlgorithmParameterSpec;
+import iaik.security.hibe.HIBSDelPrivKey;
+import iaik.security.hibe.HIBSKeyPairParamSpec;
+import iaik.security.hibe.HIBSProvider;
 import iaik.security.provider.IAIK;
 import iaik.utils.PemOutputStream;
 import iaik.x509.X509Certificate;
@@ -32,13 +34,13 @@ public class HIBECertificateTest {
   public void init() {
     IAIK.addAsProvider();
     ECCelerate.addAsProvider();
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
   }
 
   @Test
   public void StoreASimpleCert() {
     try {
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(1, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(1, new SecurityParams());
       KeyPairGenerator kpg = KeyPairGenerator.getInstance("HIBE");
       kpg.initialize(params);
       KeyPair kp = kpg.generateKeyPair();
@@ -110,7 +112,7 @@ public class HIBECertificateTest {
   public void CreateCSR() {
     KeyPairGenerator kpg = null;
     try {
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(1, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(1, new SecurityParams());
       kpg = KeyPairGenerator.getInstance("HIBE");
       kpg.initialize(params);
       KeyPair kp = kpg.generateKeyPair();
@@ -127,7 +129,7 @@ public class HIBECertificateTest {
       CertificateRequest request = new CertificateRequest(kp.getPublic(),
           subject);
       // sign the request
-      request.sign(HIBEProvider.HIBE_ALG, kp.getPrivate()); //TODO
+      request.sign(HIBSProvider.HIBS_ALG, kp.getPrivate()); //TODO
       logger.info("Request generated:");
       logger.info(request);
       System.out.println();
@@ -157,7 +159,7 @@ public class HIBECertificateTest {
       ca_kpg.initialize(1024);
       KeyPair ca_kp = ca_kpg.generateKeyPair();
 
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(2, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(2, new SecurityParams());
       KeyPairGenerator server_kpg = KeyPairGenerator.getInstance("HIBE");
       server_kpg.initialize(params);
       KeyPair server_kp = server_kpg.generateKeyPair();
@@ -206,9 +208,9 @@ public class HIBECertificateTest {
       sig.initSign(server_kp.getPrivate());
       sig.update(delData);
       byte[] signature = sig.sign();
-      HIBEDelPrivKey delPrivKey = new HIBEDelPrivKey(signature);
+      HIBSDelPrivKey delPrivKey = new HIBSDelPrivKey(signature);
       //CDN: sign signing!
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData));
       sig.initSign(delPrivKey);
       sig.update(signData);
       byte[] signature2 = sig.sign();
@@ -241,7 +243,7 @@ public class HIBECertificateTest {
       X509Certificate ca2Cert = caCertBag[0].getCertificate();
 
       //Client: verify
-      sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(delData));
+      sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(delData));
       sig.initVerify(serCert);
       sig.update(signData);
       boolean isValid = sig.verify(signature2);

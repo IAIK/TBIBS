@@ -25,7 +25,7 @@ import java.security.spec.X509EncodedKeySpec;
  * HIBEPrivateKey privKey = (HIBEPrivateKey)kf.generatePrivate(pkcs8KeySpec);
  * </pre></blockquote><p>
  */
-public final class HIBEKeyFactory extends KeyFactorySpi {
+public final class HIBSKeyFactory extends KeyFactorySpi {
 
 	/**
 	 * Default constructor for creating a HIBEKeyFactory.
@@ -35,7 +35,7 @@ public final class HIBEKeyFactory extends KeyFactorySpi {
 	 * </pre></blockquote> for instantiating a HIBEKeyFactory.
 	 *
 	 */
-	public HIBEKeyFactory() {
+	public HIBSKeyFactory() {
 	}
 
 	/**
@@ -57,7 +57,7 @@ public final class HIBEKeyFactory extends KeyFactorySpi {
 		
 		if (keySpec instanceof PKCS8EncodedKeySpec) {
 			try {
-			  pk = new HIBEPrivateKey(((PKCS8EncodedKeySpec)keySpec).getEncoded());
+			  pk = new HIBSPrivateKey(((PKCS8EncodedKeySpec)keySpec).getEncoded());
 			} catch (InvalidKeyException e) {
 		    throw new InvalidKeySpecException("Invalid KeySpec: " + e.getMessage(), e);
 		  }
@@ -86,7 +86,7 @@ public final class HIBEKeyFactory extends KeyFactorySpi {
 	  PublicKey pk = null;
 	  if (keySpec instanceof X509EncodedKeySpec) {
 		  try {
-			  pk = new HIBEPublicKey(((X509EncodedKeySpec) keySpec).getEncoded());
+			  pk = new HIBSPublicKey(((X509EncodedKeySpec) keySpec).getEncoded());
   		} catch (InvalidKeyException e) {
 	  		throw new InvalidKeySpecException("Invalid KeySpec: " + e.getMessage(), e);
 		  }
@@ -120,14 +120,14 @@ public final class HIBEKeyFactory extends KeyFactorySpi {
     throws InvalidKeySpecException {
 	
 	  KeySpec keySpec = null;
-		if (key instanceof HIBEPublicKey) {
+		if (key instanceof HIBSPublicKey) {
 
 			if (X509EncodedKeySpec.class.isAssignableFrom(classSpec)) {
 				keySpec = new X509EncodedKeySpec(key.getEncoded());
 			} else {
 			  throw new InvalidKeySpecException("Can't convert key to KeySpec.");
 			}
-		} else if (key instanceof HIBEPrivateKey) {
+		} else if (key instanceof HIBSPrivateKey) {
 
 			
 			if (PKCS8EncodedKeySpec.class.isAssignableFrom(classSpec)) {
@@ -156,11 +156,11 @@ public final class HIBEKeyFactory extends KeyFactorySpi {
 	protected Key engineTranslateKey(Key key)
 	    throws InvalidKeyException
 	{
-		if (key instanceof HIBEPublicKey) {
-			return (HIBEPublicKey)key;
-		} else if (key instanceof HIBEPrivateKey) {
-			return (HIBEPrivateKey)key;
-		} else throw new HIBEInvalidKeyException(
+		if (key instanceof HIBSPublicKey) {
+			return (HIBSPublicKey)key;
+		} else if (key instanceof HIBSPrivateKey) {
+			return (HIBSPrivateKey)key;
+		} else throw new HIBSInvalidKeyException(
 		    "Only keys of type HIBEPublicKey and HIBEPrivateKey can be translated.");
 	}
 }

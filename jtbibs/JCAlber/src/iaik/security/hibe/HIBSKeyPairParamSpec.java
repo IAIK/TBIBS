@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class HIBEKeyPairParamSpec implements AlgorithmParameterSpec {
+public class HIBSKeyPairParamSpec implements AlgorithmParameterSpec {
 
 
   private static final ASN1Object HIBE_PARAMETER_VERSION = new INTEGER(333);
@@ -30,15 +30,15 @@ public class HIBEKeyPairParamSpec implements AlgorithmParameterSpec {
   private final List<ECPoint> h; // from G1
   private final Hibe mHibe;
 
-  public static HIBEKeyPairParamSpec create(int max_signings, SecurityParams securities) {
+  public static HIBSKeyPairParamSpec create(int max_signings, SecurityParams securities) {
     if (securities != null && securities.getCurve() != null) {
       if (securities.getCurve() == null) { //TODO resolve when curve in encoding (two ifs above)
 //        Hibe.sCurve = Hibe.Curve.BN_P256;
-      } else if (securities.getCurve().equals(HIBEcurve.BN_P461)) {
+      } else if (securities.getCurve().equals(HIBScurve.BN_P461)) {
         Hibe.sCurve = Hibe.Curve.BN_P461;
-      } else if (securities.getCurve().equals(HIBEcurve.BN_P638)) {
+      } else if (securities.getCurve().equals(HIBScurve.BN_P638)) {
         Hibe.sCurve = Hibe.Curve.BN_P638;
-      } else if (securities.getCurve().equals(HIBEcurve.ISO_P512)) {
+      } else if (securities.getCurve().equals(HIBScurve.ISO_P512)) {
         Hibe.sCurve = Hibe.Curve.ISO_P512;
       }
     }
@@ -49,11 +49,11 @@ public class HIBEKeyPairParamSpec implements AlgorithmParameterSpec {
     return generateToSpec(pp);
   }
 
-  public static HIBEKeyPairParamSpec generateToSpec(PublicParams pp) {
-    return new HIBEKeyPairParamSpec(pp.p, pp.g, pp.g_head, pp.g2, pp.g3, pp.h);
+  public static HIBSKeyPairParamSpec generateToSpec(PublicParams pp) {
+    return new HIBSKeyPairParamSpec(pp.p, pp.g, pp.g_head, pp.g2, pp.g3, pp.h);
   }
 
-  private HIBEKeyPairParamSpec(BigInteger p, ECPoint g, ECPoint g_head, ECPoint g2, ECPoint g3, List<ECPoint> h) {
+  private HIBSKeyPairParamSpec(BigInteger p, ECPoint g, ECPoint g_head, ECPoint g2, ECPoint g3, List<ECPoint> h) {
     this.p = p;
     this.g = g;
     this.g_head = g_head;
@@ -82,7 +82,7 @@ public class HIBEKeyPairParamSpec implements AlgorithmParameterSpec {
     return s;
   }
 
-  public static HIBEKeyPairParamSpec decode(final ASN1Object param) throws InvalidKeyException {
+  public static HIBSKeyPairParamSpec decode(final ASN1Object param) throws InvalidKeyException {
     if (param == null) {
       throw new NullPointerException("HIBE Parameters are null!");
     }
@@ -116,11 +116,11 @@ public class HIBEKeyPairParamSpec implements AlgorithmParameterSpec {
         h.add(e);
       }
 
-      return new HIBEKeyPairParamSpec(p, g, g_head, g2, g3, h);
+      return new HIBSKeyPairParamSpec(p, g, g_head, g2, g3, h);
     } catch (IOException e) {
-      throw new HIBEInvalidKeyException("Somethings went wrong during IO while reading the HIBE key params!");
+      throw new HIBSInvalidKeyException("Somethings went wrong during IO while reading the HIBE key params!");
     } catch (CodingException | DecodingException e) {
-      throw new HIBEInvalidKeyException("Coding/decoding error while reading the HIBE key params!");
+      throw new HIBSInvalidKeyException("Coding/decoding error while reading the HIBE key params!");
     }
   }
 

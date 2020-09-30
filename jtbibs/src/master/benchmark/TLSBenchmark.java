@@ -64,20 +64,20 @@ public class TLSBenchmark extends ABenchmark {
   }
 
 //
-//  //------------- BN_P256 ---------------------------------
-//  @State(Scope.Benchmark)
-//  public static class State_BN_P256 extends BaseState {
-//
-//    @Setup(Level.Trial)
-//    public void setup() throws Exception {
-//      Hibe.sCurve = Hibe.Curve.BN_P256;// TODO find a better way to specify
-//      super.setup(new MasterServer(), new MasterClient());
-//    }
-//  }
-//  @Benchmark
-//  public void Hibe_BN_P256(State_BN_P256 s) throws Exception {
-//    mClient.connect();
-//  }
+  //------------- BN_P256 ---------------------------------
+  @State(Scope.Benchmark)
+  public static class State_BN_P256 extends BaseState {
+
+    @Setup(Level.Trial)
+    public void setup() throws Exception {
+      Hibe.sCurve = Hibe.Curve.BN_P256;// TODO find a better way to specify
+      super.setup(new MasterServer(), new MasterClient());
+    }
+  }
+  @Benchmark
+  public void Hibe_BN_P256(State_BN_P256 s) throws Exception {
+    mClient.connect();
+  }
 //  //------------- BN_P461 ---------------------------------
 //  @State(Scope.Benchmark)
 //  public static class State_BN_P461 extends BaseState {
@@ -152,23 +152,23 @@ public class TLSBenchmark extends ABenchmark {
 //  public void ECDSA(State_ECDSA s) throws Exception {
 //    mClient.connect();
 //  }
-
-
-  //------------- RSA -----------------------------------
-  @State(Scope.Benchmark)
-  public static class State_RSA extends BaseState {
-
-    @Setup(Level.Trial)
-    public void setup() throws Exception {
-      TLS13Client.sCurve = TLS13Client.SignAlgo.RSA;
-      super.setup(new TLS13Server(), new TLS13Client());
-    }
-
-  }
-  @Benchmark
-  public void RSA(State_RSA s) throws Exception {
-    mClient.connect();
-  }
+//
+//
+//  ------------- RSA -----------------------------------
+//  @State(Scope.Benchmark)
+//  public static class State_RSA extends BaseState {
+//
+//    @Setup(Level.Trial)
+//    public void setup() throws Exception {
+//      TLS13Client.sCurve = TLS13Client.SignAlgo.RSA;
+//      super.setup(new TLS13Server(), new TLS13Client());
+//    }
+//
+//  }
+//  @Benchmark
+//  public void RSA(State_RSA s) throws Exception {
+//    mClient.connect();
+//  }
 
   public static void main(String[] args) throws RunnerException {
     run(TLSBenchmark.class);

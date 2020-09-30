@@ -1,3 +1,5 @@
+package demo;
+
 import Entities.SecurityParams;
 import iaik.security.ec.math.curve.ECPoint;
 import iaik.security.hibe.*;
@@ -26,12 +28,12 @@ public class HIBEKeysTest {
     logger.info("Executing Test: " + mTestName.getMethodName());
 
     try {
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(2, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(2, new SecurityParams());
 
       ECPoint p = params.getG2().getGenerator();
-      HIBEPublicKey pubKey = new HIBEPublicKey(params, p);
+      HIBSPublicKey pubKey = new HIBSPublicKey(params, p);
       byte[] encoded = pubKey.getEncoded();
-      PublicKey pubKey2 = new HIBEPublicKey(encoded);
+      PublicKey pubKey2 = new HIBSPublicKey(encoded);
 
       Assert.assertEquals(pubKey, pubKey2);
     } catch (InvalidKeyException e) {
@@ -44,12 +46,12 @@ public class HIBEKeysTest {
     logger.info("Executing Test: " + mTestName.getMethodName());
 
     try {
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(2, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(2, new SecurityParams());
 
       ECPoint p = params.getG1().getGenerator();
-      HIBEPrivateKey privKey = new HIBEPrivateKey(params, p);
+      HIBSPrivateKey privKey = new HIBSPrivateKey(params, p);
       byte[] encoded = privKey.getEncoded();
-      HIBEPrivateKey privKey2 = new HIBEPrivateKey(encoded);
+      HIBSPrivateKey privKey2 = new HIBSPrivateKey(encoded);
 
       Assert.assertEquals(privKey, privKey2);
     } catch (InvalidKeyException e) {
@@ -62,14 +64,14 @@ public class HIBEKeysTest {
     logger.info("Executing Test: " + mTestName.getMethodName());
 
     try {
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(2, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(2, new SecurityParams());
 
       ECPoint p = params.getG1().getGenerator();
-      HIBEPrivateKey privKey = new HIBEPrivateKey(params, p);
+      HIBSPrivateKey privKey = new HIBSPrivateKey(params, p);
 
-      HIBEDelPrivKey delKey = HIBEWithSHA256Signature.delegate(params, privKey, "blaa".getBytes());
+      HIBSDelPrivKey delKey = HIBSWithSHA256Signature.delegate(params, privKey, "blaa".getBytes());
       byte[] encoded = delKey.getEncoded();
-      HIBEDelPrivKey delKey2 = new HIBEDelPrivKey(encoded);
+      HIBSDelPrivKey delKey2 = new HIBSDelPrivKey(encoded);
 
       Assert.assertEquals(delKey, delKey2);
     } catch (InvalidKeyException e) {

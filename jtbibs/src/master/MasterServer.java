@@ -1,8 +1,38 @@
+// Copyright (C) 2002 IAIK
+// http://jce.iaik.tugraz.at
+//
+// Copyright (C) 2003 Stiftung Secure Information and 
+//                    Communication Technologies SIC
+// http://jce.iaik.tugraz.at
+//
+// All rights reserved.
+//
+// This source is provided for inspection purposes and recompilation only,
+// unless specified differently in a contract with IAIK. This source has to
+// be kept in strict confidence and must not be disclosed to any third party
+// under any circumstances. Redistribution in source and binary forms, with
+// or without modification, are <not> permitted in any case!
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+// SUCH DAMAGE.
+//
+// $Header: /IAIK-SSL/TLS13/TLS13/src/demo/tls13/TLS13Server.java 5     4.10.19 11:04 Dbratko $
+//
+
 package master;
 
 import demo.DemoUtil;
 import demo.ecc.ECCDemoUtil;
-import iaik.security.hibe.HIBEProvider;
+import iaik.security.hibe.HIBSProvider;
 import iaik.security.ssl.*;
 import master.iaikProviderImpl.IaikHibeProvider;
 
@@ -33,7 +63,7 @@ public class MasterServer extends AServer {
       // ignore; ECC not available
       System.err.println("ERROR: ECC not available!");
     }
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
     SecurityProvider.setSecurityProvider(new IaikHibeProvider());
 
     //REAL START
@@ -51,7 +81,7 @@ public class MasterServer extends AServer {
     HibeCommon.getInstance().addServerCertificates(serverContext);
 
     // request client authentication
-    // serverContext.setRequestClientCertificate(true);
+    serverContext.setRequestClientCertificate(true);
     // accept clients without certificate as well
     serverContext.addTrustedCertificate(null);
 

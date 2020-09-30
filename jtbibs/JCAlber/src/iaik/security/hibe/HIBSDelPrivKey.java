@@ -15,16 +15,16 @@ import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HIBEDelPrivKey extends PrivateKeyInfo {
+public class HIBSDelPrivKey extends PrivateKeyInfo {
 
   private DelegatedSecretKey mKey;
   private transient byte[] encodedDelPrivKey_;
 
   public static final INTEGER EC_PRIVATE_KEY_VERSION = new INTEGER(334);
 
-  private transient HIBEKeyPairParamSpec params_;
+  private transient HIBSKeyPairParamSpec params_;
 
-  public HIBEDelPrivKey(HIBEKeyPairParamSpec params, DelegatedSecretKey secKey) {
+  public HIBSDelPrivKey(HIBSKeyPairParamSpec params, DelegatedSecretKey secKey) {
     if ((params == null) || (secKey == null)) {
       throw new NullPointerException("At least one of params, w is null!");
     } else if (!params.getG1().equals(secKey.a0.getCurve()) &&
@@ -37,7 +37,7 @@ public class HIBEDelPrivKey extends PrivateKeyInfo {
     createHIBEPrivateKey();
   }
 
-  public HIBEDelPrivKey(byte[] endcoded)
+  public HIBSDelPrivKey(byte[] endcoded)
       throws InvalidKeyException {
     super(endcoded);
   }
@@ -49,21 +49,21 @@ public class HIBEDelPrivKey extends PrivateKeyInfo {
 
     final ASN1Object parameters = private_key_algorithm.getParameter();
     if (parameters == null) {
-      throw new HIBEInvalidKeyException("No HIBE private key: No parameters specified!");
+      throw new HIBSInvalidKeyException("No HIBE private key: No parameters specified!");
     }
-    HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.decode(parameters);
+    HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.decode(parameters);
 
     try {
       ASN1 asn1 = new ASN1(privateDelKey);
       if (!asn1.toASN1Object().isA(ASN.SEQUENCE)) {
-        throw new HIBEInvalidKeyException("Signature must be ASN.1 SEQUENCE!");
+        throw new HIBSInvalidKeyException("Signature must be ASN.1 SEQUENCE!");
       }
 
       mKey = decodeDelKey(hibe, asn1);
       params_ = params;
 
     } catch (CodingException | IOException | DecodingException e) {
-      throw new HIBEInvalidKeyException("PrivDelKey not decodable!");
+      throw new HIBSInvalidKeyException("PrivDelKey not decodable!");
     }
   }
 
@@ -84,7 +84,7 @@ public class HIBEDelPrivKey extends PrivateKeyInfo {
 
   void createHIBEPrivateKey() {
     try {
-      private_key_algorithm = (AlgorithmID) HIBEProvider.HIBE_ALG.clone();
+      private_key_algorithm = (AlgorithmID) HIBSProvider.HIBS_ALG.clone();
       private_key_algorithm.setParameter(params_.toASN1Object());
 
       SEQUENCE s = encodeDelKey(mKey);
@@ -152,7 +152,7 @@ public class HIBEDelPrivKey extends PrivateKeyInfo {
     return mKey;
   }
 
-  public HIBEKeyPairParamSpec getParams() {
+  public HIBSKeyPairParamSpec getParams() {
     return params_;
   }
 }

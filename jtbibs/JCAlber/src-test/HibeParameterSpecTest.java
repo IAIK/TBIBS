@@ -1,3 +1,5 @@
+package demo;
+
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;

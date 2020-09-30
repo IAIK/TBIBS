@@ -1,6 +1,6 @@
 package iaik.security.hibe;
 
-public enum HIBEcurve {
+public enum HIBScurve {
     BN_P256,
     BN_P461,
     BN_P638,

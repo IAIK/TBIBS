@@ -54,7 +54,7 @@ public class HibeCommon {
       ca_kpg.initialize(1024);
       mCaKp = ca_kpg.generateKeyPair();
 
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.create(3, new SecurityParams());
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.create(3, new SecurityParams());
       KeyPairGenerator server_kpg = KeyPairGenerator.getInstance("HIBE");
       server_kpg.initialize(params);
       mSvKp = server_kpg.generateKeyPair();
@@ -65,19 +65,19 @@ public class HibeCommon {
 
       if (!mode.equals(TlsDemoMode.MissingDelegate)) {
           byte[] domain = HibeDemoUtils.SERVER_NAME.getBytes();
-        byte[] epoch = HIBEUtils.getEpoch(HIBEUtils.EpochGranularity.Day);
+        byte[] epoch = HIBSUtils.getEpoch(HIBSUtils.EpochGranularity.Day);
         // Server
         Signature sig = Signature.getInstance("HIBE");
         sig.initSign(mSvKp.getPrivate());
         sig.update(domain);
         byte[] signature = sig.sign();
-        HIBEDelPrivKey delPrivKey = new HIBEDelPrivKey(signature); //TODO find solution to stay in JSA
-        sig.setParameter(new HIBEAlgorithmParameterSpec().addDelegateIDs(domain));
+        HIBSDelPrivKey delPrivKey = new HIBSDelPrivKey(signature); //TODO find solution to stay in JSA
+        sig.setParameter(new HIBSAlgorithmParameterSpec().addDelegateIDs(domain));
         sig.initSign(delPrivKey);
         sig.update(epoch);
         byte[] signature2 = sig.sign();
         //CDN
-        mCDNprivK = new HIBEDelPrivKey(signature2);
+        mCDNprivK = new HIBSDelPrivKey(signature2);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -87,7 +87,7 @@ public class HibeCommon {
   private void init() {
 //    IAIK.addAsProvider();
 //    ECCelerate.addAsProvider();
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
   }
 
   public void addClientCertificates(SSLClientContext context) {

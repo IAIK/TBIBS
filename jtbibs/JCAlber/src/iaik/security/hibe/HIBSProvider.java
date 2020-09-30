@@ -44,12 +44,12 @@ import iaik.asn1.structures.AlgorithmID;
 /**
  * JCA provider for the MOA Key- and Crypto-Modules.
  */
-public final class HIBEProvider extends Provider {
+public final class HIBSProvider extends Provider {
   
   /**
    * AlgorithmID (1.3.6.1.4.1.2706.5.3) for the HIBE signature scheme.
    */
-  public static final AlgorithmID HIBE_ALG = new AlgorithmID("1.3.6.1.4.1.2706.5.3", "HIBE", "HIBE", false);
+  public static final AlgorithmID HIBS_ALG = new AlgorithmID("1.3.6.1.4.1.2706.5.3", "HIBE", "HIBE", false);
     
 
   /**
@@ -69,7 +69,7 @@ public final class HIBEProvider extends Provider {
    * This is the default constructor which registers the implemented
    * algorithms to the Java Security API.
    */
-  public HIBEProvider() {
+  public HIBSProvider() {
       super(name, version, info);
        
     AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
@@ -84,21 +84,21 @@ public final class HIBEProvider extends Provider {
   private void addAlgorithms() {
     
     String algorithm = "HIBE";
-    String oid = HIBE_ALG.getAlgorithm().getID();
-    List<String> aliases = Arrays.asList(oid);
+    String oid = HIBS_ALG.getAlgorithm().getID();
+    List<String> aliases = Arrays.asList(oid, "HIBS");
     Map<String,String> supportedAttributes = null;
     
     String type = "KeyFactory";
-    String className = "iaik.security.hibe.HIBEKeyFactory"; 
+    String className = "iaik.security.hibe.HIBSKeyFactory";
     putService(new Service(this, type, algorithm, className, aliases, supportedAttributes));
     
     type = "KeyPairGenerator";
-    className = "iaik.security.hibe.HIBEKeyPairGenerator";
+    className = "iaik.security.hibe.HIBSKeyPairGenerator";
     putService(new Service(this, type, algorithm, className, aliases, supportedAttributes));
     
     type = "Signature";
     oid = oid+".1";
-    className = "iaik.security.hibe.HIBEWithSHA256Signature";
+    className = "iaik.security.hibe.HIBSWithSHA256Signature";
     putService(new Service(this, type, algorithm, className, aliases, supportedAttributes));
     
         

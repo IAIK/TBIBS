@@ -1,3 +1,33 @@
+// Copyright (C) 2002 IAIK
+// http://jce.iaik.tugraz.at
+//
+// Copyright (C) 2003 Stiftung Secure Information and 
+//                    Communication Technologies SIC
+// http://jce.iaik.tugraz.at
+//
+// All rights reserved.
+//
+// This source is provided for inspection purposes and recompilation only,
+// unless specified differently in a contract with IAIK. This source has to
+// be kept in strict confidence and must not be disclosed to any third party
+// under any circumstances. Redistribution in source and binary forms, with
+// or without modification, are <not> permitted in any case!
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+// LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+// OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+// SUCH DAMAGE.
+//
+// $Header: /IAIK-SSL/TLS13/TLS13/src/demo/tls13/TLS13Client.java 9     4.10.19 11:04 Dbratko $
+//
+
 package master;
 
 import demo.DemoUtil;
@@ -7,7 +37,7 @@ import iaik.security.ssl.*;
 import java.io.OutputStream;
 import java.security.Security;
 
-import iaik.security.hibe.HIBEProvider;
+import iaik.security.hibe.HIBSProvider;
 import master.iaikProviderImpl.IaikHibeProvider;
 import org.apache.log4j.Logger;
 
@@ -64,7 +94,7 @@ public class MasterClient extends AClient{
       logger.error("ECC not possible to add!");
       e.printStackTrace();
     }
-    Security.addProvider(new HIBEProvider());
+    Security.addProvider(new HIBSProvider());
     SecurityProvider.setSecurityProvider(new IaikHibeProvider());
 
     // client context

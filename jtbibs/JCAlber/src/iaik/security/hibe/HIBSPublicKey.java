@@ -11,7 +11,7 @@ import iaik.x509.PublicKeyInfo;
 /**
  * HIBE public key.
  */
-public class HIBEPublicKey extends PublicKeyInfo 
+public class HIBSPublicKey extends PublicKeyInfo
 {
 
 	private ECPoint p_;
@@ -20,13 +20,13 @@ public class HIBEPublicKey extends PublicKeyInfo
 	/**
    * Domain parameters of the elliptic curve
    */
-  private transient HIBEKeyPairParamSpec params_;
+  private transient HIBSKeyPairParamSpec params_;
 
 	
 	/**
 	 * Constructor.
 	 */
-	public HIBEPublicKey(final HIBEKeyPairParamSpec params, final ECPoint pubKey) {
+	public HIBSPublicKey(final HIBSKeyPairParamSpec params, final ECPoint pubKey) {
 		if ((params == null) || (pubKey == null)) {
 			throw new NullPointerException("At least one of params, w is null!");
 		}
@@ -47,7 +47,7 @@ public class HIBEPublicKey extends PublicKeyInfo
 	 * @exception InvalidKeyException
 	 *              if something is wrong with the key encoding
 	 */
-	public HIBEPublicKey(byte[] endcoded)
+	public HIBSPublicKey(byte[] endcoded)
 	    throws InvalidKeyException
 	{
 		super(endcoded);
@@ -63,7 +63,7 @@ public class HIBEPublicKey extends PublicKeyInfo
 	 * @exception InvalidKeyException
 	 *              if something is wrong with the key encoding
 	 */
-	public HIBEPublicKey(ASN1Object obj)
+	public HIBSPublicKey(ASN1Object obj)
 	    throws InvalidKeyException
 	{
 		super(obj);
@@ -89,10 +89,10 @@ public class HIBEPublicKey extends PublicKeyInfo
 		  encodedPublicKey_ = publicKey;
 			final ASN1Object parameters = public_key_algorithm.getParameter();
 			if (parameters == null) {
-				throw new HIBEInvalidKeyException("No HIBE public key: No parameters specified!");
+				throw new HIBSInvalidKeyException("No HIBE public key: No parameters specified!");
 			}
 
-			HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.decode(parameters);
+			HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.decode(parameters);
 
 			final ECPoint pTmp = params.getG2().decodePoint(encodedPublicKey_);
 
@@ -100,7 +100,7 @@ public class HIBEPublicKey extends PublicKeyInfo
 			p_ = pTmp;
 
 		} catch (Exception ex) {
-			throw new HIBEInvalidKeyException("Error parsing key: " + ex.getMessage(), ex);
+			throw new HIBSInvalidKeyException("Error parsing key: " + ex.getMessage(), ex);
 		}
 	}
 
@@ -111,7 +111,7 @@ public class HIBEPublicKey extends PublicKeyInfo
 	void createHIBEPublicKey() {
 
   	try {
-  	  public_key_algorithm = (AlgorithmID) HIBEProvider.HIBE_ALG.clone();
+  	  public_key_algorithm = (AlgorithmID) HIBSProvider.HIBS_ALG.clone();
       public_key_algorithm.setParameter(params_.toASN1Object());
       encodedPublicKey_ = params_.getG2().encodePoint(p_);
 		} catch (final Exception e) {
@@ -180,10 +180,10 @@ public class HIBEPublicKey extends PublicKeyInfo
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof HIBEPublicKey)) {
+		if (!(obj instanceof HIBSPublicKey)) {
 			return false;
 		}
-		HIBEPublicKey other = (HIBEPublicKey) obj;
+		HIBSPublicKey other = (HIBSPublicKey) obj;
 
 		return super.equals(other);
 	}

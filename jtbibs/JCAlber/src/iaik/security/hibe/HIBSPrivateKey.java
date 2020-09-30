@@ -11,7 +11,7 @@ import iaik.security.ec.math.curve.ECPoint;
 /**
  * HIBE private key.
  */
-public class HIBEPrivateKey extends PrivateKeyInfo {
+public class HIBSPrivateKey extends PrivateKeyInfo {
 
   private ECPoint p_;
   private transient byte[] encodedPrivateKey_;
@@ -21,12 +21,12 @@ public class HIBEPrivateKey extends PrivateKeyInfo {
   /**
    * Domain parameters of the elliptic curve
    */
-  private transient HIBEKeyPairParamSpec params_;
+  private transient HIBSKeyPairParamSpec params_;
 
   /**
    * Constructor.
    */
-  public HIBEPrivateKey(HIBEKeyPairParamSpec params, ECPoint secKey) {
+  public HIBSPrivateKey(HIBSKeyPairParamSpec params, ECPoint secKey) {
     if ((params == null) || (secKey == null)) {
       throw new NullPointerException("At least one of params, w is null!");
     } else if (!params.getG1().equals(secKey.getCurve())) {
@@ -45,7 +45,7 @@ public class HIBEPrivateKey extends PrivateKeyInfo {
    * @param endcoded the byte array holding the DER encoded private key info
    * @throws InvalidKeyException if something is wrong with the key encoding
    */
-  public HIBEPrivateKey(byte[] endcoded)
+  public HIBSPrivateKey(byte[] endcoded)
       throws InvalidKeyException {
     super(endcoded);
   }
@@ -57,7 +57,7 @@ public class HIBEPrivateKey extends PrivateKeyInfo {
    * @param obj the private key as ASN1Object
    * @throws InvalidKeyException if something is wrong with the key encoding
    */
-  public HIBEPrivateKey(ASN1Object obj)
+  public HIBSPrivateKey(ASN1Object obj)
       throws InvalidKeyException {
     super(obj);
   }
@@ -77,9 +77,9 @@ public class HIBEPrivateKey extends PrivateKeyInfo {
 
       final ASN1Object parameters = private_key_algorithm.getParameter();
       if (parameters == null) {
-        throw new HIBEInvalidKeyException("No HIBE private key: No parameters specified!");
+        throw new HIBSInvalidKeyException("No HIBE private key: No parameters specified!");
       }
-      HIBEKeyPairParamSpec params = HIBEKeyPairParamSpec.decode(parameters);
+      HIBSKeyPairParamSpec params = HIBSKeyPairParamSpec.decode(parameters);
 
 			final ECPoint pTmp = params.getG1().decodePoint(encodedPrivateKey_);
 
@@ -87,7 +87,7 @@ public class HIBEPrivateKey extends PrivateKeyInfo {
 			p_ = pTmp;
 
     } catch (Exception e) {
-      throw new HIBEInvalidKeyException("Error parsing key: " + e.getMessage(), e);
+      throw new HIBSInvalidKeyException("Error parsing key: " + e.getMessage(), e);
     }
   }
 
@@ -106,7 +106,7 @@ public class HIBEPrivateKey extends PrivateKeyInfo {
   void createHIBEPrivateKey() {
 
     try {
-      private_key_algorithm = (AlgorithmID) HIBEProvider.HIBE_ALG.clone();
+      private_key_algorithm = (AlgorithmID) HIBSProvider.HIBS_ALG.clone();
       private_key_algorithm.setParameter(params_.toASN1Object());
       encodedPrivateKey_ = params_.getG1().encodePoint(p_);
     } catch (Exception e) {
@@ -167,7 +167,7 @@ public class HIBEPrivateKey extends PrivateKeyInfo {
     return p_;
   }
 
-  public HIBEKeyPairParamSpec getParams() {
+  public HIBSKeyPairParamSpec getParams() {
     return params_;
   }
 }
