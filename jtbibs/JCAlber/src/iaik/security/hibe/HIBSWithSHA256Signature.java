@@ -3,7 +3,6 @@ package iaik.security.hibe;
 import Entities.DelegatedSecretKey;
 import Entities.PublicParams;
 import HIBE.Hibe;
-import demo.HIBEStandardTest;
 import iaik.security.ec.math.curve.ECPoint;
 import org.apache.log4j.Logger;
 
@@ -13,12 +12,11 @@ import java.security.spec.AlgorithmParameterSpec;
 
 public class HIBSWithSHA256Signature extends SignatureSpi {
 
-  private static Logger logger = Logger.getLogger(HIBEStandardTest.class);
+  private static Logger logger = Logger.getLogger(HIBSWithSHA256Signature.class);
 
   enum SignatureAction {
     SIGNING,
     VERIFYING;
-
   }
 
   private SignatureAction mDoing;

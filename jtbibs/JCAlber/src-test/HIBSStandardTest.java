@@ -10,8 +10,8 @@ import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
-public class HIBEStandardTest {
-  private static Logger logger = Logger.getLogger(HIBEStandardTest.class);
+public class HIBSStandardTest {
+  private static Logger logger = Logger.getLogger(HIBSStandardTest.class);
 
 
   @Test

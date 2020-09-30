@@ -27,8 +27,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class HIBECertificateTest {
-  private static Logger logger = Logger.getLogger(HIBECertificateTest.class);
+public class HIBSCertificateTest {
+  private static Logger logger = Logger.getLogger(HIBSCertificateTest.class);
 
   @Before
   public void init() {

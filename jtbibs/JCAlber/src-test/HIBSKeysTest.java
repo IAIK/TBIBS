@@ -13,8 +13,8 @@ import org.junit.rules.TestName;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
 
-public class HIBEKeysTest {
-  private static Logger logger = Logger.getLogger(HIBEKeysTest.class);
+public class HIBSKeysTest {
+  private static Logger logger = Logger.getLogger(HIBSKeysTest.class);
 
   @Rule
   public TestName mTestName = new TestName();
