@@ -21,4 +21,4 @@ Secure Delegation for TLS. In 2020 Cloud Computing Security Workshop
 ## References
 
 * Conference version: https://doi.org/10.1145/3411495.3421362
-* Full version: *todo: arxiv link*
+* Full version: https://arxiv.org/abs/2009.02137
