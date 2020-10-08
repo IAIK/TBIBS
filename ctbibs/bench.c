@@ -312,9 +312,9 @@ static int verify(signature_t* sig, hibe_public_key_t* pk, ep_t precomp, const u
     ep2_curve_get_gen(rhs[2]);
 
     pp_map_sim_k12(val, lhs, rhs, 3);
-   //  status = fp12_cmp(val, fp12_one) == RLC_EQ ? 0 : 1;
-   fp12_sub(val, val, fp12_one);
-   status = !fp12_is_zero(val);
+    //  status = fp12_cmp(val, fp12_one) == RLC_EQ ? 0 : 1;
+    fp12_sub(val, val, fp12_one);
+    status = !fp12_is_zero(val);
   }
   CATCH_ANY {
     status = -1;
@@ -376,17 +376,18 @@ int main() {
   }
 
   printf("verifying\n");
-  if (verify(&sig, dk.pk, dk.precomp, id_1, sizeof(id_1), id_2, sizeof(id_2), message, sizeof(message))) {
+  if (verify(&sig, dk.pk, dk.precomp, id_1, sizeof(id_1), id_2, sizeof(id_2), message,
+             sizeof(message))) {
     status = -1;
     goto exit;
   }
   printf("done\n");
 
   static const unsigned int REPS = 100000;
-  uint64_t time_sign_s = 0;
-  uint64_t time_sign_ns = 0;
-  uint64_t time_verify_s = 0;
-  uint64_t time_verify_ns = 0;
+  uint64_t time_sign_s           = 0;
+  uint64_t time_sign_ns          = 0;
+  uint64_t time_verify_s         = 0;
+  uint64_t time_verify_ns        = 0;
 
   for (unsigned int i = 0; i < REPS; ++i) {
     struct timespec start, mid, end;
@@ -394,7 +395,8 @@ int main() {
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
     sign(&sig, &dk, id_1, sizeof(id_1), id_2, sizeof(id_2), message, sizeof(message));
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mid);
-    verify(&sig, dk.pk, dk.precomp, id_1, sizeof(id_1), id_2, sizeof(id_2), message, sizeof(message));
+    verify(&sig, dk.pk, dk.precomp, id_1, sizeof(id_1), id_2, sizeof(id_2), message,
+           sizeof(message));
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
     const uint64_t delta_sign =
