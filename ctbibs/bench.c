@@ -18,7 +18,7 @@
 
 #include "tbibs.h"
 
-#define L 3
+#define L 2
 
 int main() {
   if (core_init() != RLC_OK) {

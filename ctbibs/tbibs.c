@@ -83,6 +83,8 @@ tbibs_public_params_t* tbibs_public_params_new(unsigned int L) {
   if (!L) {
     return NULL;
   }
+  /* add a level for the message */
+  L += 1;
 
   tbibs_public_params_t* pp = malloc(sizeof(tbibs_public_params_t) + L * sizeof(ep_t));
   if (!pp) {
