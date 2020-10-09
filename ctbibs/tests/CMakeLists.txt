@@ -1,4 +1,3 @@
-find_package(cgreen)
 if(cgreen_FOUND)
   add_executable(tests tests.c pp.c keys.c sig.c)
   target_link_libraries(tests PRIVATE tbibs ${CGREEN_LIBRARIES})

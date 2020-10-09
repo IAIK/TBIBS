@@ -5,10 +5,13 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-project(tbibs LANGUAGES C VERSION 1.0 DESCRIPTION "relic-based TBIBS library")
+project(tbibs LANGUAGES C CXX VERSION 1.0 DESCRIPTION "relic-based TBIBS library")
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(GNUInstallDirs)
 include(CheckCCompilerFlag)
@@ -29,9 +32,14 @@ check_c_compiler_flag_and_add(-Werror=vla CC_SUPPORTS_WERROR_VLA)
 
 find_package(relic REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(cgreen) # for tests
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost 1.65.0 COMPONENTS timer)
 
 # TBIBS library
-add_library(tbibs SHARED tbibs.c)
+add_library(tbibs SHARED tbibs.c tbibs.cpp)
 set_target_properties(tbibs PROPERTIES VERSION ${PROJECT_VERSION})
 target_include_directories(tbibs PRIVATE ${RELIC_INCLUDE_DIR})
 target_link_libraries(tbibs PRIVATE ${RELIC_LIBRARY} OpenSSL::Crypto)
@@ -39,8 +47,10 @@ target_link_libraries(tbibs PRIVATE ${RELIC_LIBRARY} OpenSSL::Crypto)
 configure_file(tbibs.pc.in tbibs.pc @ONLY)
 
 # benchmarks
-add_executable(bench bench.c)
-target_link_libraries(bench PRIVATE tbibs)
+if (Boost_FOUND)
+  add_executable(bench bench.cpp)
+  target_link_libraries(bench PRIVATE tbibs Boost::timer)
+endif()
 
 # testing
 enable_testing()
