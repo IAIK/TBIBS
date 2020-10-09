@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-project(ctbibs LANGUAGES C VERSION 1.0 DESCRIPTION "relic-based TBIBS library")
+project(tbibs LANGUAGES C VERSION 1.0 DESCRIPTION "relic-based TBIBS library")
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -31,9 +31,12 @@ find_package(relic REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 # TBIBS library
-add_library(tbibs STATIC tbibs.c)
+add_library(tbibs SHARED tbibs.c)
+set_target_properties(tbibs PROPERTIES VERSION ${PROJECT_VERSION})
 target_include_directories(tbibs PRIVATE ${RELIC_INCLUDE_DIR})
 target_link_libraries(tbibs PRIVATE ${RELIC_LIBRARY} OpenSSL::Crypto)
+
+configure_file(tbibs.pc.in tbibs.pc @ONLY)
 
 # benchmarks
 add_executable(bench bench.c)
@@ -42,3 +45,16 @@ target_link_libraries(bench PRIVATE tbibs)
 # testing
 enable_testing()
 add_subdirectory(tests)
+
+# install tbibs
+install(TARGETS tbibs
+        EXPORT tbibs-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES ${CMAKE_BINARY_DIR}/tbibs.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES tbibs.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/)
+install(EXPORT tbibs-targets
+        NAMESPACE tbibs::
+        FILE tbibs-config.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/tbibs)
