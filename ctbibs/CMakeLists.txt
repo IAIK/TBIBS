@@ -15,6 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(GNUInstallDirs)
 include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
 include(CheckIncludeFiles)
 include(CheckSymbolExists)
 
@@ -25,8 +26,17 @@ function(check_c_compiler_flag_and_add flag result)
   endif()
 endfunction()
 
+function(check_cxx_compiler_flag_and_add flag result)
+  check_cxx_compiler_flag("${flag}" ${result})
+  if(${result})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}")
+  endif()
+endfunction()
+
 check_c_compiler_flag_and_add(-Wall CC_SUPPORTS_WALL)
+check_cxx_compiler_flag_and_add(-Wall CXX_SUPPORTS_WALL)
 check_c_compiler_flag_and_add(-Wshadow CC_SUPPORTS_WSHADOW)
+check_cxx_compiler_flag_and_add(-Wshadow CXX_SUPPORTS_WSHADOW)
 check_c_compiler_flag_and_add(-Werror=implicit-function-declaration CC_SUPPORTS_WERROR_IMPLICIT_FUNCTION_DECLARATION)
 check_c_compiler_flag_and_add(-Werror=vla CC_SUPPORTS_WERROR_VLA)
 
