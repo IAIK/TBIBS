@@ -74,6 +74,7 @@ Ensure(TBIBS_SIG, sign_and_verify) {
   assert_that(tbibs_verify_precompute(pk, epoch, id_1, sizeof(id_1), id_2, sizeof(id_2)),
               is_equal_to(0));
   assert_that(tbibs_verify(sig, pk, message, sizeof(message)), is_equal_to(0));
+  assert_that(tbibs_verify(sig, pk, message + 1, sizeof(message) - 1), is_not_equal_to(0));
 
   tbibs_signature_free(sig);
 }
