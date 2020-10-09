@@ -18,7 +18,7 @@ include(CheckSymbolExists)
 function(check_c_compiler_flag_and_add flag result)
   check_c_compiler_flag("${flag}" ${result})
   if(${result})
-    add_compile_options("${flag}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}")
   endif()
 endfunction()
 
@@ -38,3 +38,7 @@ target_link_libraries(tbibs PRIVATE ${RELIC_LIBRARY} OpenSSL::Crypto)
 # benchmarks
 add_executable(bench bench.c)
 target_link_libraries(bench PRIVATE tbibs)
+
+# testing
+enable_testing()
+add_subdirectory(tests)

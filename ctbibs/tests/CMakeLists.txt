@@ -1,0 +1,7 @@
+find_package(cgreen)
+if(cgreen_FOUND)
+  add_executable(tests tests.c pp.c keys.c sig.c)
+  target_link_libraries(tests PRIVATE tbibs ${CGREEN_LIBRARIES})
+  target_include_directories(tests PRIVATE ${CGREEN_INCLUDE_DIRS})
+  add_test(NAME TBIBS COMMAND tests)
+endif()
