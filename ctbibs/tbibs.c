@@ -65,6 +65,21 @@ static void hash_order(bn_t v, bn_t order, const uint8_t* data, size_t len) {
   bn_mod(v, v, order);
 }
 
+/* relic init/deinit */
+
+int tbibs_init(void) {
+  if (core_init() != RLC_OK) {
+    return 1;
+  }
+
+  ep_param_set_any_pairf();
+  return 0;
+}
+
+void tbibs_deinit(void) {
+  core_clean();
+}
+
 /* public parameter handling */
 
 void tbibs_public_params_free(tbibs_public_params_t* pp) {

@@ -27,6 +27,9 @@ typedef struct tbibs_secret_key_s tbibs_secret_key_t;
 typedef struct tbibs_delegated_key_s tbibs_delegated_key_t;
 typedef struct tbibs_signature_s tbibs_signature_t;
 
+int tbibs_init(void);
+void tbibs_deinit(void);
+
 void tbibs_public_params_free(tbibs_public_params_t* pp);
 tbibs_public_params_t* tbibs_public_params_new(unsigned int L);
 

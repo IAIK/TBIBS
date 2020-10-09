@@ -37,5 +37,4 @@ target_link_libraries(tbibs PRIVATE ${RELIC_LIBRARY} OpenSSL::Crypto)
 
 # benchmarks
 add_executable(bench bench.c)
-target_include_directories(bench PRIVATE ${RELIC_INCLUDE_DIR})
-target_link_libraries(bench PRIVATE tbibs ${RELIC_LIBRARY})
+target_link_libraries(bench PRIVATE tbibs)

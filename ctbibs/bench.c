@@ -14,20 +14,16 @@
 #include <stdio.h>
 #include <time.h>
 
-#include <relic/relic.h>
-
 #include "tbibs.h"
 
 #define L 2
 
 int main() {
-  if (core_init() != RLC_OK) {
-    core_clean();
+  if (tbibs_init()) {
     return -1;
   }
 
   int status = 0;
-  ep_param_set_any_pairf();
 
   tbibs_public_params_t* pp = NULL;
   tbibs_public_key_t* pk = NULL;
@@ -124,6 +120,7 @@ exit:
   tbibs_secret_key_free(sk);
   tbibs_public_key_free(pk);
   tbibs_public_params_free(pp);
+  tbibs_deinit();
 
   return status;
 }
