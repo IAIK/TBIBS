@@ -499,6 +499,10 @@ int tbibs_verify_precompute(tbibs_public_key_t* pk, uint64_t epoch, ...) {
 
 int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* message,
                  size_t message_len) {
+  if (!sig || !pk) {
+    return -1;
+  }
+
   int status = 0;
 
   tbibs_public_params_t* pp = pk->pp;
