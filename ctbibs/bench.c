@@ -26,10 +26,10 @@ int main() {
   int status = 0;
 
   tbibs_public_params_t* pp = NULL;
-  tbibs_public_key_t* pk = NULL;
-  tbibs_secret_key_t* sk = NULL;
+  tbibs_public_key_t* pk    = NULL;
+  tbibs_secret_key_t* sk    = NULL;
   tbibs_delegated_key_t* dk = NULL;
-  tbibs_signature_t* sig = NULL;
+  tbibs_signature_t* sig    = NULL;
 
   printf("generting public parameters\n");
   pp = tbibs_public_params_new(L);
@@ -51,13 +51,14 @@ int main() {
     goto exit;
   }
 
+  static const uint64_t epoch    = 0x123;
   static const uint8_t id_1[]    = {0x12, 0x13};
   static const uint8_t id_2[]    = {0x14, 0x15, 0x16, 0x17, 0x18};
   static const uint8_t message[] = {0xad, 0xac, 0xab, 0xaa, 0xa9};
 
   printf("delegating key\n");
   dk = tbibs_delegated_key_new(pp);
-  if (tbibs_delegate_key(dk, sk, id_1, sizeof(id_1), id_2, sizeof(id_2))) {
+  if (tbibs_delegate_key(dk, sk, epoch, id_1, sizeof(id_1), id_2, sizeof(id_2))) {
     status = -1;
     goto exit;
   }
@@ -70,7 +71,7 @@ int main() {
   }
 
   printf("verifying\n");
-  if (tbibs_verify_precompute(pk, id_1, sizeof(id_1), id_2, sizeof(id_2))) {
+  if (tbibs_verify_precompute(pk, epoch, id_1, sizeof(id_1), id_2, sizeof(id_2))) {
     status = -1;
     goto exit;
   }

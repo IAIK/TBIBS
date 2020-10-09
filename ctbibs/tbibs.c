@@ -54,11 +54,20 @@ struct tbibs_signature_s {
 
 /* helper functions */
 
-static void hash_order(bn_t v, bn_t order, const uint8_t* data, size_t len) {
+static void hash_order(bn_t v, bn_t order, size_t num, ...) {
   uint8_t digest[RLC_MD_LEN_SH512];
   SHA512_CTX ctx;
   SHA512_Init(&ctx);
-  SHA512_Update(&ctx, data, len);
+
+  va_list ap;
+  va_start(ap, num);
+  while (num--) {
+    const uint8_t* data = va_arg(ap, const uint8_t*);
+    const size_t len = va_arg(ap, const size_t);
+    SHA512_Update(&ctx, data, len);
+  }
+  va_end(ap);
+
   SHA512_Final(digest, &ctx);
 
   bn_read_bin(v, digest, RLC_MD_LEN_SH512);
@@ -277,7 +286,7 @@ int tbibs_generate_key(tbibs_secret_key_t* sk, tbibs_public_key_t* pk) {
   return ret;
 }
 
-int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, ...) {
+int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, uint64_t epoch, ...) {
   if (!dk || !sk || dk->pp != sk->pp) {
     return -1;
   }
@@ -294,15 +303,22 @@ int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, ...) {
     bn_new(v);
     ep_new(tmp);
 
-    ep_set_infty(dk->s_1);
     va_list ap;
-    va_start(ap, sk);
-    for (unsigned int i = 0; i < pp->L - 1; ++i) {
-      // h_i^H(id_i)
-      const uint8_t* id = va_arg(ap, const uint8_t*);
-      const size_t len = va_arg(ap, const size_t);
+    va_start(ap, epoch);
 
-      hash_order(v, pp->order, id, len);
+    // h_1^H(epoch | id_1)
+    const uint8_t* id = va_arg(ap, const uint8_t*);
+    size_t len = va_arg(ap, size_t);
+
+    hash_order(v, pp->order, 2, &epoch, sizeof(epoch), id, len);
+    ep_mul(dk->s_1, pp->h[0], v);
+
+    for (unsigned int i = 1; i < pp->L - 1; ++i) {
+      // h_i^H(id_i)
+      id = va_arg(ap, const uint8_t*);
+      len = va_arg(ap, size_t);
+
+      hash_order(v, pp->order, 1, id, len);
       ep_mul(tmp, pp->h[i], v);
       ep_add(dk->s_1, dk->s_1, tmp);
     }
@@ -388,7 +404,7 @@ int tbibs_sign(tbibs_signature_t* sig, tbibs_delegated_key_t* dk, const uint8_t*
     // ep_mul(tmp, dk->pk->h[1], h);
     // ep_add(sig->s_1, sig->s_1, tmp);
     // h^H(id_3)
-    hash_order(h, pp->order, message, message_len);
+    hash_order(h, pp->order, 1, message, message_len);
     ep_mul(sig->s_1, pp->h[pp->L - 1], h);
     ep_add(sig->s_1, dk->precomp, sig->s_1);
     // * g_3
@@ -421,7 +437,7 @@ int tbibs_sign(tbibs_signature_t* sig, tbibs_delegated_key_t* dk, const uint8_t*
 
 /* verification */
 
-int tbibs_verify_precompute(tbibs_public_key_t* pk, ...) {
+int tbibs_verify_precompute(tbibs_public_key_t* pk, uint64_t epoch, ...) {
   if (!pk) {
     return -1;
   }
@@ -438,15 +454,21 @@ int tbibs_verify_precompute(tbibs_public_key_t* pk, ...) {
     bn_new(v);
     ep_new(tmp);
 
-    ep_set_infty(pk->precomp);
     va_list ap;
-    va_start(ap, pk);
-    for (unsigned int i = 0; i < pp->L - 1; ++i) {
-      // h_i^H(id_i)
-      const uint8_t* id = va_arg(ap, const uint8_t*);
-      const size_t len = va_arg(ap, const size_t);
+    va_start(ap, epoch);
 
-      hash_order(v, pp->order, id, len);
+    // h_1^H(epoch | id)
+    const uint8_t* id = va_arg(ap, const uint8_t*);
+    size_t len = va_arg(ap, size_t);
+    hash_order(v, pp->order, 2, &epoch, sizeof(epoch), id, len);
+    ep_mul(pk->precomp, pp->h[0], v);
+
+    for (unsigned int i = 1; i < pp->L - 1; ++i) {
+      // h_i^H(id_i)
+      id = va_arg(ap, const uint8_t*);
+      len = va_arg(ap, const size_t);
+
+      hash_order(v, pp->order, 1, id, len);
       ep_mul(tmp, pp->h[i], v);
       ep_add(pk->precomp, pk->precomp, tmp);
     }
@@ -507,7 +529,7 @@ int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* 
     // ep_mul(tmp, pk->h[1], h);
     // ep_add(lhs[0], lhs[0], tmp);
     // h_3^H(id_3)
-    hash_order(h, pp->order, message, message_len);
+    hash_order(h, pp->order, 1, message, message_len);
     ep_mul(lhs[0], pp->h[pp-> L -1], h);
     ep_add(lhs[0], pk->precomp, lhs[0]);
     // * g_3

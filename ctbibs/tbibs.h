@@ -40,12 +40,12 @@ tbibs_secret_key_t* tbibs_secret_key_new(tbibs_public_params_t* pp);
 void tbibs_delegated_key_free(tbibs_delegated_key_t* dk);
 tbibs_delegated_key_t* tbibs_delegated_key_new(tbibs_public_params_t* pp);
 int tbibs_generate_key(tbibs_secret_key_t* sk, tbibs_public_key_t* pk);
-int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, ...);
+int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, uint64_t epoch, ...);
 
 void tbibs_signature_free(tbibs_signature_t* sig);
 tbibs_signature_t* tbibs_signature_new(void);
 int tbibs_sign(tbibs_signature_t* sig, tbibs_delegated_key_t* dk, const uint8_t* message, size_t message_len);
-int tbibs_verify_precompute(tbibs_public_key_t* pk, ...) ;
+int tbibs_verify_precompute(tbibs_public_key_t* pk, uint64_t epoch, ...) ;
 int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* message,
                  size_t message_len);
 
