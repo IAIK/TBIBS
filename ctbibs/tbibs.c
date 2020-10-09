@@ -303,7 +303,7 @@ int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, ...) {
       const size_t len = va_arg(ap, const size_t);
 
       hash_order(v, pp->order, id, len);
-      ep_mul(tmp, pp->h[0], v);
+      ep_mul(tmp, pp->h[i], v);
       ep_add(dk->s_1, dk->s_1, tmp);
     }
     va_end(ap);
@@ -447,7 +447,7 @@ int tbibs_verify_precompute(tbibs_public_key_t* pk, ...) {
       const size_t len = va_arg(ap, const size_t);
 
       hash_order(v, pp->order, id, len);
-      ep_mul(tmp, pp->h[0], v);
+      ep_mul(tmp, pp->h[i], v);
       ep_add(pk->precomp, pk->precomp, tmp);
     }
     va_end(ap);
