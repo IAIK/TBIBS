@@ -30,7 +30,12 @@ check_c_compiler_flag_and_add(-Werror=vla CC_SUPPORTS_WERROR_VLA)
 find_package(relic REQUIRED)
 find_package(OpenSSL REQUIRED)
 
+# TBIBS library
+add_library(tbibs STATIC tbibs.c)
+target_include_directories(tbibs PRIVATE ${RELIC_INCLUDE_DIR})
+target_link_libraries(tbibs PRIVATE ${RELIC_LIBRARY} OpenSSL::Crypto)
+
 # benchmarks
 add_executable(bench bench.c)
 target_include_directories(bench PRIVATE ${RELIC_INCLUDE_DIR})
-target_link_libraries(bench PRIVATE ${RELIC_LIBRARY} OpenSSL::Crypto)
+target_link_libraries(bench PRIVATE tbibs ${RELIC_LIBRARY})
