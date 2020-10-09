@@ -93,13 +93,13 @@ int main() {
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
     tbibs_sign(sig, dk, message, sizeof(message));
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &mid);
-    tbibs_verify_precompute(pk, id_1, sizeof(id_1), id_2, sizeof(id_2));
+    tbibs_verify(sig, pk, message, sizeof(message));
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
 
     const uint64_t delta_sign =
         (mid.tv_sec * 1000000000 + mid.tv_nsec) - (start.tv_sec * 1000000000 + start.tv_nsec);
     const uint64_t delta_verify =
-        (end.tv_sec * 1000000000.0 + end.tv_nsec) - (mid.tv_sec * 1000000000.0 + mid.tv_nsec);
+        (end.tv_sec * 1000000000 + end.tv_nsec) - (mid.tv_sec * 1000000000 + mid.tv_nsec);
 
     time_sign_s += delta_sign / 1000000000;
     if (__builtin_add_overflow(time_sign_ns, delta_sign % 1000000000, &time_sign_ns)) {
