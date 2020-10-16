@@ -15,10 +15,11 @@
 #include <cgreen/cgreen.h>
 
 #define L 2
-static tbibs_public_params_t* pp = NULL;
-static tbibs_public_key_t* pk    = NULL;
-static tbibs_secret_key_t* sk    = NULL;
-static tbibs_delegated_key_t* dk = NULL;
+static tbibs_public_params_t* pp                  = NULL;
+static tbibs_public_key_t* pk                     = NULL;
+static tbibs_public_key_with_precomp_t* pkprecomp = NULL;
+static tbibs_secret_key_t* sk                     = NULL;
+static tbibs_delegated_key_t* dk                  = NULL;
 
 static const uint64_t epoch    = 0x123;
 static const uint8_t id_1[]    = {0x12, 0x13};
@@ -35,20 +36,26 @@ BeforeEach(TBIBS_SIG) {
   assert_that(pk, is_non_null);
   assert_that(sk, is_non_null);
   assert_that(dk, is_non_null);
+  pkprecomp = tbibs_public_key_with_precomp_new(pk);
+  assert_that(pkprecomp, is_non_null);
 
   assert_that(tbibs_generate_key(sk, pk), is_equal_to(0));
   assert_that(tbibs_delegate_key(dk, sk, epoch, id_1, sizeof(id_1), id_2, sizeof(id_2)),
               is_equal_to(0));
+  assert_that(tbibs_public_key_precompute(pkprecomp, epoch, id_1, sizeof(id_1), id_2, sizeof(id_2)),
+              is_equal_to(0));
 }
 AfterEach(TBIBS_SIG) {
+  tbibs_public_key_with_precomp_free(pkprecomp);
   tbibs_delegated_key_free(dk);
   tbibs_secret_key_free(sk);
   tbibs_public_key_free(pk);
   tbibs_public_params_free(pp);
-  dk = NULL;
-  sk = NULL;
-  pk = NULL;
-  pp = NULL;
+  pkprecomp = NULL;
+  dk        = NULL;
+  sk        = NULL;
+  pk        = NULL;
+  pp        = NULL;
 }
 
 Ensure(TBIBS_SIG, sig_new) {
@@ -71,10 +78,27 @@ Ensure(TBIBS_SIG, sign_and_verify) {
   assert_that(sig, is_non_null);
 
   assert_that(tbibs_sign(sig, dk, message, sizeof(message)), is_equal_to(0));
-  assert_that(tbibs_verify_precompute(pk, epoch, id_1, sizeof(id_1), id_2, sizeof(id_2)),
+  assert_that(tbibs_verify(sig, pk, message, sizeof(message), epoch, id_1, sizeof(id_1), id_2,
+                           sizeof(id_2)),
               is_equal_to(0));
-  assert_that(tbibs_verify(sig, pk, message, sizeof(message)), is_equal_to(0));
-  assert_that(tbibs_verify(sig, pk, message + 1, sizeof(message) - 1), is_not_equal_to(0));
+  assert_that(tbibs_verify(sig, pk, message + 1, sizeof(message) - 1, epoch, id_1, sizeof(id_1),
+                           id_2, sizeof(id_2)),
+              is_not_equal_to(0));
+  assert_that(tbibs_verify(sig, pk, message, sizeof(message), epoch, id_2, sizeof(id_2), id_1,
+                           sizeof(id_1)),
+              is_not_equal_to(0));
+
+  tbibs_signature_free(sig);
+}
+
+Ensure(TBIBS_SIG, sign_and_verify_with_precomp) {
+  tbibs_signature_t* sig = tbibs_signature_new();
+  assert_that(sig, is_non_null);
+
+  assert_that(tbibs_sign(sig, dk, message, sizeof(message)), is_equal_to(0));
+  assert_that(tbibs_verify_with_precomp(sig, pkprecomp, message, sizeof(message)), is_equal_to(0));
+  assert_that(tbibs_verify_with_precomp(sig, pkprecomp, message + 1, sizeof(message) - 1),
+              is_not_equal_to(0));
 
   tbibs_signature_free(sig);
 }
@@ -83,4 +107,5 @@ void add_tbibs_sig_tests(TestSuite* suite) {
   add_test_with_context(suite, TBIBS_SIG, sig_new);
   add_test_with_context(suite, TBIBS_SIG, sign);
   add_test_with_context(suite, TBIBS_SIG, sign_and_verify);
+  add_test_with_context(suite, TBIBS_SIG, sign_and_verify_with_precomp);
 }

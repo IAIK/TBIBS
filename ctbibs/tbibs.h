@@ -23,6 +23,7 @@ extern "C" {
 
 typedef struct tbibs_public_params_s tbibs_public_params_t;
 typedef struct tbibs_public_key_s tbibs_public_key_t;
+typedef struct tbibs_public_key_with_precomp_s tbibs_public_key_with_precomp_t;
 typedef struct tbibs_secret_key_s tbibs_secret_key_t;
 typedef struct tbibs_delegated_key_s tbibs_delegated_key_t;
 typedef struct tbibs_signature_s tbibs_signature_t;
@@ -35,6 +36,10 @@ tbibs_public_params_t* tbibs_public_params_new(unsigned int L);
 
 void tbibs_public_key_free(tbibs_public_key_t* pk);
 tbibs_public_key_t* tbibs_public_key_new(tbibs_public_params_t* pp);
+void tbibs_public_key_with_precomp_free(tbibs_public_key_with_precomp_t* pk);
+tbibs_public_key_with_precomp_t* tbibs_public_key_with_precomp_new(tbibs_public_key_t* pk);
+int tbibs_public_key_precompute(tbibs_public_key_with_precomp_t* pkprecomp, uint64_t epoch, ...);
+
 void tbibs_secret_key_free(tbibs_secret_key_t* sk);
 tbibs_secret_key_t* tbibs_secret_key_new(tbibs_public_params_t* pp);
 void tbibs_delegated_key_free(tbibs_delegated_key_t* dk);
@@ -44,10 +49,12 @@ int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, uint64
 
 void tbibs_signature_free(tbibs_signature_t* sig);
 tbibs_signature_t* tbibs_signature_new(void);
-int tbibs_sign(tbibs_signature_t* sig, tbibs_delegated_key_t* dk, const uint8_t* message, size_t message_len);
-int tbibs_verify_precompute(tbibs_public_key_t* pk, uint64_t epoch, ...) ;
+int tbibs_sign(tbibs_signature_t* sig, tbibs_delegated_key_t* dk, const uint8_t* message,
+               size_t message_len);
+int tbibs_verify_with_precomp(tbibs_signature_t* sig, tbibs_public_key_with_precomp_t* pk,
+                              const uint8_t* message, size_t message_len);
 int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* message,
-                 size_t message_len);
+                 size_t message_len, uint64_t epoch, ...);
 
 #ifdef __cplusplus
 }

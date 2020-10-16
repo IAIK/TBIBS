@@ -31,6 +31,10 @@ struct tbibs_public_params_s {
 struct tbibs_public_key_s {
   tbibs_public_params_t* pp;
   ep2_t public_key;
+};
+
+struct tbibs_public_key_with_precomp_s {
+  tbibs_public_key_t* pk;
   ep_t precomp;
 };
 
@@ -145,16 +149,16 @@ tbibs_public_params_t* tbibs_public_params_new(unsigned int L) {
     bn_new(pp->order);
     ep_curve_get_ord(pp->order);
 
-    snprintf(buffer, sizeof(buffer), "TBIBS|g_2|%"PRIx64, (uint64_t)L);
+    snprintf(buffer, sizeof(buffer), "TBIBS|g_2|%" PRIx64, (uint64_t)L);
     ep_new(pp->g_2);
     ep_map(pp->g_2, (const uint8_t*)buffer, strlen(buffer));
 
-    snprintf(buffer, sizeof(buffer), "TBIBS|g_3|%"PRIx64, (uint64_t)L);
+    snprintf(buffer, sizeof(buffer), "TBIBS|g_3|%" PRIx64, (uint64_t)L);
     ep_new(pp->g_3);
     ep_map(pp->g_3, (const uint8_t*)buffer, strlen(buffer));
 
     for (unsigned int i = 0; i < L; ++i) {
-      snprintf(buffer, sizeof(buffer), "TBIBS|g|%"PRIx64"|%"PRIx64, (uint64_t)L, (uint64_t)i);
+      snprintf(buffer, sizeof(buffer), "TBIBS|g|%" PRIx64 "|%" PRIx64, (uint64_t)L, (uint64_t)i);
       ep_new(pp->h[i]);
       ep_map(pp->h[i], (const uint8_t*)buffer, strlen(buffer));
     }
@@ -170,7 +174,6 @@ tbibs_public_params_t* tbibs_public_params_new(unsigned int L) {
 
 void tbibs_public_key_free(tbibs_public_key_t* pk) {
   if (pk) {
-    ep_free(pk->precomp);
     ep2_free(pk->public_key);
     free(pk);
   }
@@ -189,17 +192,46 @@ tbibs_public_key_t* tbibs_public_key_new(tbibs_public_params_t* pp) {
   pk->pp = pp;
   /* initialize to NULL */
   ep2_null(pk->public_key);
-  ep_null(pk->precomp);
 
   TRY {
     ep2_new(pk->public_key);
-    ep_new(pk->precomp);
   } CATCH_ANY {
     tbibs_public_key_free(pk);
     pk = NULL;
   }
 
   return pk;
+}
+
+void tbibs_public_key_with_precomp_free(tbibs_public_key_with_precomp_t* pk) {
+  if (pk) {
+    ep_free(pk->precomp);
+    free(pk);
+  }
+}
+
+tbibs_public_key_with_precomp_t* tbibs_public_key_with_precomp_new(tbibs_public_key_t* pk) {
+  if (!pk) {
+    return NULL;
+  }
+
+  tbibs_public_key_with_precomp_t* pkprecomp = malloc(sizeof(tbibs_public_key_with_precomp_t));
+  if (!pkprecomp) {
+    return NULL;
+  }
+
+  pkprecomp->pk = pk;
+  /* initialize to NULL */
+  ep_null(pkprecomp->precomp);
+
+  TRY {
+    ep_new(pkprecomp->precomp);
+  } CATCH_ANY {
+    tbibs_public_key_with_precomp_free(pkprecomp);
+    pkprecomp = NULL;
+  }
+
+  return pkprecomp;
 }
 
 void tbibs_secret_key_free(tbibs_secret_key_t* sk) {
@@ -351,14 +383,64 @@ int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, uint64
     ep2_mul_gen(dk->s_2, v);
     // h_3^v
     ep_mul(dk->s_3[0], pp->h[sk->pp->L - 1], v);
-  }
-  CATCH_ANY {
+  } CATCH_ANY {
     ret = 1;
-  }
-  FINALLY {
+  } FINALLY {
     ep_free(tmp);
     bn_free(v);
   }
+
+  return ret;
+}
+
+static int tbibs_public_key_precompute_va(tbibs_public_key_with_precomp_t* pkprecomp,
+                                          uint64_t epoch, va_list ap) {
+  tbibs_public_key_t* pk    = pkprecomp->pk;
+  tbibs_public_params_t* pp = pk->pp;
+  int ret                   = 0;
+
+  bn_t v;
+  bn_null(v);
+
+  ep_t tmp;
+  ep_null(tmp);
+  TRY {
+    bn_new(v);
+    ep_new(tmp);
+
+    // h_1^H(epoch | id)
+    const uint8_t* id = va_arg(ap, const uint8_t*);
+    size_t len        = va_arg(ap, size_t);
+    hash_order(v, pp->order, 2, &epoch, sizeof(epoch), id, len);
+    ep_mul(pkprecomp->precomp, pp->h[0], v);
+
+    for (unsigned int i = 1; i < pp->L - 1; ++i) {
+      // h_i^H(id_i)
+      id  = va_arg(ap, const uint8_t*);
+      len = va_arg(ap, const size_t);
+
+      hash_order(v, pp->order, 1, id, len);
+      ep_mul(tmp, pp->h[i], v);
+      ep_add(pkprecomp->precomp, pkprecomp->precomp, tmp);
+    }
+    // * g_3
+    ep_add(pkprecomp->precomp, pkprecomp->precomp, pp->g_3);
+  } CATCH_ANY {
+    ret = 1;
+  }
+
+  return ret;
+}
+
+int tbibs_public_key_precompute(tbibs_public_key_with_precomp_t* pkprecomp, uint64_t epoch, ...) {
+  if (!pkprecomp) {
+    return -1;
+  }
+
+  va_list va;
+  va_start(va, epoch);
+  int ret = tbibs_public_key_precompute_va(pkprecomp, epoch, va);
+  va_end(va);
 
   return ret;
 }
@@ -438,11 +520,9 @@ int tbibs_sign(tbibs_signature_t* sig, tbibs_delegated_key_t* dk, const uint8_t*
     ep2_mul_gen(sig->s_2, v);
     // * a_1
     ep2_add(sig->s_2, sig->s_2, dk->s_2);
-  }
-  CATCH_ANY {
+  } CATCH_ANY {
     status = 1;
-  }
-  FINALLY {
+  } FINALLY {
     bn_free(h);
     bn_free(v);
   }
@@ -452,59 +532,15 @@ int tbibs_sign(tbibs_signature_t* sig, tbibs_delegated_key_t* dk, const uint8_t*
 
 /* verification */
 
-int tbibs_verify_precompute(tbibs_public_key_t* pk, uint64_t epoch, ...) {
-  if (!pk) {
-    return -1;
-  }
-
-  tbibs_public_params_t* pp = pk->pp;
-  int ret                   = 0;
-
-  bn_t v;
-  bn_null(v);
-
-  ep_t tmp;
-  ep_null(tmp);
-  TRY {
-    bn_new(v);
-    ep_new(tmp);
-
-    va_list ap;
-    va_start(ap, epoch);
-
-    // h_1^H(epoch | id)
-    const uint8_t* id = va_arg(ap, const uint8_t*);
-    size_t len        = va_arg(ap, size_t);
-    hash_order(v, pp->order, 2, &epoch, sizeof(epoch), id, len);
-    ep_mul(pk->precomp, pp->h[0], v);
-
-    for (unsigned int i = 1; i < pp->L - 1; ++i) {
-      // h_i^H(id_i)
-      id  = va_arg(ap, const uint8_t*);
-      len = va_arg(ap, const size_t);
-
-      hash_order(v, pp->order, 1, id, len);
-      ep_mul(tmp, pp->h[i], v);
-      ep_add(pk->precomp, pk->precomp, tmp);
-    }
-    va_end(ap);
-    // * g_3
-    ep_add(pk->precomp, pk->precomp, pp->g_3);
-  } CATCH_ANY {
-    ret = 1;
-  }
-
-  return ret;
-}
-
-int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* message,
-                 size_t message_len) {
-  if (!sig || !pk) {
+int tbibs_verify_with_precomp(tbibs_signature_t* sig, tbibs_public_key_with_precomp_t* pkprecomp,
+                              const uint8_t* message, size_t message_len) {
+  if (!sig || !pkprecomp) {
     return -1;
   }
 
   int status = 0;
 
+  tbibs_public_key_t* pk    = pkprecomp->pk;
   tbibs_public_params_t* pp = pk->pp;
 
   ep_t lhs[3];
@@ -545,7 +581,7 @@ int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* 
     // h_3^H(id_3)
     hash_order(h, pp->order, 1, message, message_len);
     ep_mul(lhs[0], pp->h[pp->L - 1], h);
-    ep_add(lhs[0], pk->precomp, lhs[0]);
+    ep_add(lhs[0], pkprecomp->precomp, lhs[0]);
     // * g_3
     // ep_add(lhs[0], lhs[0], pk->g_3);
 
@@ -564,11 +600,9 @@ int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* 
     //  status = fp12_cmp(val, fp12_one) == RLC_EQ ? 0 : 1;
     fp12_sub(val, val, fp12_one);
     status = !fp12_is_zero(val);
-  }
-  CATCH_ANY {
+  } CATCH_ANY {
     status = 1;
-  }
-  FINALLY {
+  } FINALLY {
     bn_free(h);
     fp12_free(val);
     ep2_free(rhs[2]);
@@ -578,6 +612,30 @@ int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* 
     ep_free(lhs[1]);
     ep_free(lhs[0]);
   }
+
+  return status;
+}
+
+int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* message,
+                 size_t message_len, uint64_t epoch, ...) {
+  if (!sig || !pk) {
+    return -1;
+  }
+
+  tbibs_public_key_with_precomp_t* pkprecomp = tbibs_public_key_with_precomp_new(pk);
+  if (!pkprecomp) {
+    return -1;
+  }
+
+  va_list va;
+  va_start(va, epoch);
+  int status = tbibs_public_key_precompute_va(pkprecomp, epoch, va);
+  va_end(va);
+
+  if (!status) {
+    status = tbibs_verify_with_precomp(sig, pkprecomp, message, message_len);
+  }
+  tbibs_public_key_with_precomp_free(pkprecomp);
 
   return status;
 }

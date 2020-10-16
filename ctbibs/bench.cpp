@@ -58,6 +58,13 @@ int main() {
     return -1;
   }
 
+  std::cout << "precomputing public key" << std::endl;
+  std::shared_ptr<tbibs_public_key_with_precomp_t> pkprecomp{
+      tbibs_public_key_with_precomp_new(pk.get()), tbibs_public_key_with_precomp_free};
+  if (tbibs_public_key_precompute(pkprecomp.get(), epoch, id_1, sizeof(id_1), id_2, sizeof(id_2))) {
+    return -1;
+  }
+
   std::shared_ptr<tbibs_signature_t> sig{tbibs_signature_new(), tbibs_signature_free};
 
   std::cout << "benchmarking ..." << std::endl;
@@ -74,7 +81,7 @@ int main() {
     sign_timer.stop();
 
     verify_timer.resume();
-    tbibs_verify(sig.get(), pk.get(), message, sizeof(message));
+    tbibs_verify_with_precomp(sig.get(), pkprecomp.get(), message, sizeof(message));
     verify_timer.stop();
   }
 

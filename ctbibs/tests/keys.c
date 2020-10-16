@@ -78,10 +78,37 @@ Ensure(TBIBS_KEYS, delegate) {
   tbibs_public_key_free(pk);
 }
 
+Ensure(TBIBS_KEYS, pk_precomp_new) {
+  tbibs_public_key_t* pk = tbibs_public_key_new(pp);
+  assert_that(pk, is_non_null);
+
+  tbibs_public_key_with_precomp_t* pkprecomp = tbibs_public_key_with_precomp_new(pk);
+  assert_that(pk, is_non_null);
+
+  tbibs_public_key_with_precomp_free(pkprecomp);
+  tbibs_public_key_free(pk);
+}
+
+Ensure(TBIBS_KEYS, pk_precomp) {
+  tbibs_public_key_t* pk = tbibs_public_key_new(pp);
+  assert_that(pk, is_non_null);
+
+  tbibs_public_key_with_precomp_t* pkprecomp = tbibs_public_key_with_precomp_new(pk);
+  assert_that(pk, is_non_null);
+
+  assert_that(tbibs_public_key_precompute(pkprecomp, epoch, id_1, sizeof(id_1), id_2, sizeof(id_2)),
+              is_equal_to(0));
+
+  tbibs_public_key_with_precomp_free(pkprecomp);
+  tbibs_public_key_free(pk);
+}
+
 void add_tbibs_keys_tests(TestSuite* suite) {
   add_test_with_context(suite, TBIBS_KEYS, pk_new);
+  add_test_with_context(suite, TBIBS_KEYS, pk_precomp_new);
   add_test_with_context(suite, TBIBS_KEYS, sk_new);
   add_test_with_context(suite, TBIBS_KEYS, dk_new);
   add_test_with_context(suite, TBIBS_KEYS, key_gen);
   add_test_with_context(suite, TBIBS_KEYS, delegate);
+  add_test_with_context(suite, TBIBS_KEYS, pk_precomp);
 }
