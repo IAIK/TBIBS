@@ -73,20 +73,28 @@ int main() {
   boost::timer::cpu_timer verify_timer;
   verify_timer.stop();
 
+  unsigned int sign_failures = 0;
+  unsigned int verify_failures = 0;
+
   for (unsigned int i = 0; i < REPS; ++i) {
     std::generate_n(message, sizeof(message), rand);
 
     sign_timer.resume();
-    tbibs_sign(sig.get(), dk.get(), message, sizeof(message));
+    if (tbibs_sign(sig.get(), dk.get(), message, sizeof(message))) {
+      ++sign_failures;
+    }
     sign_timer.stop();
 
     verify_timer.resume();
-    tbibs_verify_with_precomp(sig.get(), pkprecomp.get(), message, sizeof(message));
+    if (tbibs_verify_with_precomp(sig.get(), pkprecomp.get(), message, sizeof(message))) {
+      ++verify_failures;
+    }
     verify_timer.stop();
   }
 
+  std::cout << "sign failures: " << sign_failures << " verify failures: " << verify_failures << "\n";
   std::cout << "sign x " << REPS << ": " << sign_timer.format(9, "%ws wall, %ts CPU") << "\n";
-  std::cout << "verify x " << REPS << ": " << verify_timer.format(9, "%ws wall, %ts CPU") << "\n";
+  std::cout << "verify x " << REPS << ": " << verify_timer.format(9, "%ws wall, %ts CPU") << std::endl;
 
   return 0;
 }
