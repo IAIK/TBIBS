@@ -15,6 +15,7 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <stdexcept>
 #include <boost/timer/timer.hpp>
 
 #include "tbibs.hpp"
@@ -24,7 +25,7 @@ namespace {
   constexpr unsigned int REPS = 10000;
 } // namespace
 
-int main() {
+int main() try {
   tbibs_instance tbibs;
 
   std::cout << "generting public parameters" << std::endl;
@@ -97,4 +98,6 @@ int main() {
   std::cout << "verify x " << REPS << ": " << verify_timer.format(9, "%ws wall, %ts CPU") << std::endl;
 
   return 0;
+} catch (const std::exception& e) {
+  std::cerr << "E: " << e.what() << std::endl;
 }

@@ -21,6 +21,7 @@ tbibs_instance::tbibs_instance() {
   }
 }
 
-tbibs_instance::~tbibs_instance() {
+tbibs_instance::~tbibs_instance() noexcept {
+  // if the dtor is called, tbibs_init was successful
   tbibs_deinit();
 }

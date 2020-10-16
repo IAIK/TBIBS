@@ -18,7 +18,7 @@
 
 struct tbibs_instance {
   tbibs_instance();
-  ~tbibs_instance();
+  ~tbibs_instance() noexcept;
 
   tbibs_instance(const tbibs_instance&) = delete;
   tbibs_instance& operator=(const tbibs_instance&) = delete;
