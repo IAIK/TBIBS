@@ -17,6 +17,7 @@
 void add_tbibs_pp_tests(TestSuite* suite);
 void add_tbibs_keys_tests(TestSuite* suite);
 void add_tbibs_sig_tests(TestSuite* suite);
+void add_tbibs_io_tests(TestSuite* suite);
 
 int main() {
   tbibs_init();
@@ -25,6 +26,7 @@ int main() {
   add_tbibs_pp_tests(suite);
   add_tbibs_keys_tests(suite);
   add_tbibs_sig_tests(suite);
+  add_tbibs_io_tests(suite);
 
   const int ret = run_test_suite(suite, create_text_reporter());
 

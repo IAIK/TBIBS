@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(GNUInstallDirs)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
-include(CheckIncludeFiles)
+include(CheckIncludeFile)
 include(CheckSymbolExists)
 
 function(check_c_compiler_flag_and_add flag result)
@@ -47,6 +47,14 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.65.0 COMPONENTS timer)
+
+# check for endian.h
+check_include_file("endian.h" HAVE_ENDIAN_H)
+if (NOT HAVE_ENDIAN_H)
+  message(FATAL_ERROR "endian.h is required but could not be found")
+endif()
+# check for open_memstream
+check_symbol_exists(open_memstream stdio.h HAVE_OPEN_MEMSTREAM)
 
 # TBIBS library
 add_library(tbibs SHARED tbibs.c tbibs.cpp)

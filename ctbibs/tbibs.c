@@ -13,9 +13,12 @@
 
 #include "tbibs.h"
 
+#include <assert.h>
+#include <endian.h>
 #include <inttypes.h>
-#include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <openssl/sha.h>
@@ -170,6 +173,10 @@ tbibs_public_params_t* tbibs_public_params_new(unsigned int L) {
   return pp;
 }
 
+static bool public_params_equal(tbibs_public_params_t* pp1, tbibs_public_params_t* pp2) {
+  return pp1 == pp2 || pp1->L == pp2->L;
+}
+
 /* key handling */
 
 void tbibs_public_key_free(tbibs_public_key_t* pk) {
@@ -312,7 +319,7 @@ tbibs_delegated_key_t* tbibs_delegated_key_new(tbibs_public_params_t* pp) {
 }
 
 int tbibs_generate_key(tbibs_secret_key_t* sk, tbibs_public_key_t* pk) {
-  if (!sk || !pk || sk->pp != pk->pp) {
+  if (!sk || !pk || !public_params_equal(sk->pp, pk->pp)) {
     return -1;
   }
 
@@ -335,7 +342,7 @@ int tbibs_generate_key(tbibs_secret_key_t* sk, tbibs_public_key_t* pk) {
 }
 
 int tbibs_delegate_key(tbibs_delegated_key_t* dk, tbibs_secret_key_t* sk, uint64_t epoch, ...) {
-  if (!dk || !sk || dk->pp != sk->pp) {
+  if (!dk || !sk || !public_params_equal(sk->pp, dk->pp)) {
     return -1;
   }
 
@@ -638,4 +645,179 @@ int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* 
   tbibs_public_key_with_precomp_free(pkprecomp);
 
   return status;
+}
+
+/* serialization functions */
+
+#define EP_SIZE (1 + 2 * RLC_FP_BYTES)
+#define EP2_SIZE (1 + 4 * RLC_FP_BYTES)
+
+static_assert(sizeof(size_t) <= sizeof(uint64_t), "size_t is larger than uint64_t");
+
+static size_t write_size_t(FILE* file, size_t value) {
+  const uint64_t tmp = htole64(value);
+  return fwrite(&tmp, sizeof(tmp), 1, file);
+}
+
+static size_t write_ep_t(FILE* file, ep_t p) {
+  const size_t s = ep_size_bin(p, 0);
+  if (!write_size_t(file, s)) {
+    return 0;
+  }
+
+  uint8_t buffer[EP_SIZE] = { 0 };
+  ep_write_bin(buffer, s, p, 0);
+  return fwrite(buffer, s, 1, file);
+}
+
+static size_t write_ep2_t(FILE* file, ep2_t p) {
+  const size_t s = ep2_size_bin(p, 0);
+  if (!write_size_t(file, s)) {
+    return 0;
+  }
+
+  uint8_t buffer[EP2_SIZE] = { 0 };
+  ep2_write_bin(buffer, s, p, 0);
+  return fwrite(buffer, s, 1, file);
+}
+
+static size_t read_size_t(size_t* value, FILE* file) {
+  if (!value || !file) {
+    return sizeof(uint64_t);
+  }
+
+  uint64_t tmp;
+  if (fread(&tmp, sizeof(uint64_t), 1, file) != 1) {
+    return 0;
+  }
+  tmp = le64toh(tmp);
+  if (tmp > SIZE_MAX) {
+    return 0;
+  }
+  *value = tmp;
+  return 1;
+}
+
+static size_t read_ep_t(ep_t p, FILE* file) {
+  size_t s = 0;
+  uint8_t buffer[EP_SIZE] = { 0 };
+  if (!read_size_t(&s, file) || fread(buffer, s, 1, file) != 1) {
+    return 0;
+  }
+
+  ep_read_bin(p, buffer, s);
+  return 1;
+}
+
+static size_t read_ep2_t(ep2_t p, FILE* file) {
+  size_t s = 0;
+  uint8_t buffer[EP2_SIZE] = { 0 };
+  if (!read_size_t(&s, file) || fread(buffer, s, 1, file) != 1) {
+    return 0;
+  }
+
+  ep2_read_bin(p, buffer, s);
+  return 1;
+}
+
+size_t tbibs_public_params_write(FILE* file, tbibs_public_params_t* pp) {
+  if (!file || !pp) {
+    return 0;
+  }
+
+  return write_size_t(file, pp->L - 1);
+}
+
+size_t tbibs_public_key_write(FILE* file, tbibs_public_key_t* pk) {
+  if (!file || !pk) {
+    return 0;
+  }
+
+  return write_ep2_t(file, pk->public_key);
+}
+
+size_t tbibs_secret_key_write(FILE* file, tbibs_secret_key_t* sk) {
+  if (!file || !sk) {
+    return 0;
+  }
+
+  return write_ep_t(file, sk->secret_key);
+}
+
+size_t tbibs_delegated_key_write(FILE* file, tbibs_delegated_key_t* dk) {
+  if (!file || !dk) {
+    return 0;
+  }
+
+  if (!write_ep_t(file, dk->s_1) || !write_ep2_t(file, dk->s_2) || !write_ep_t(file, dk->precomp) ||
+      !write_ep_t(file, dk->s_3[0])) {
+    return 0;
+  }
+
+  return 1;
+}
+
+size_t tbibs_signature_write(FILE* file, tbibs_signature_t* sig) {
+  if (!file || !sig) {
+    return 0;
+  }
+
+  if (!write_ep_t(file, sig->s_1) || !write_ep2_t(file, sig->s_2)) {
+    return 0;
+  }
+
+  return 1;
+}
+
+tbibs_public_params_t* tbibs_public_params_read(FILE* file) {
+  if (!file) {
+    return NULL;
+  }
+
+  size_t L = 0;
+  if (!read_size_t(&L, file)) {
+    return NULL;
+  }
+  return tbibs_public_params_new(L);
+}
+
+size_t tbibs_public_key_read(tbibs_public_key_t* pk, FILE* file) {
+  if (!pk || !file) {
+    return 0;
+  }
+
+  return read_ep2_t(pk->public_key, file);
+}
+
+size_t tbibs_secret_key_read(tbibs_secret_key_t* sk, FILE* file) {
+  if (!sk || !file) {
+    return 0;
+  }
+
+  return read_ep_t(sk->secret_key, file);
+}
+
+size_t tbibs_delegated_key_read(tbibs_delegated_key_t* dk, FILE* file) {
+  if (!dk || !file) {
+    return 0;
+  }
+
+  if (!read_ep_t(dk->s_1, file) || !read_ep2_t(dk->s_2, file) || !read_ep_t(dk->precomp, file) ||
+      !read_ep_t(dk->s_3[0], file)) {
+    return 0;
+  }
+
+  return 1;
+}
+
+size_t tbibs_signature_read(tbibs_signature_t* sig, FILE* file) {
+  if (!sig || !file) {
+    return 0;
+  }
+
+  if (!read_ep_t(sig->s_1, file) || !read_ep2_t(sig->s_2, file)) {
+    return 0;
+  }
+
+  return 1;
 }

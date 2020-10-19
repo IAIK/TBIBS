@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +56,18 @@ int tbibs_verify_with_precomp(tbibs_signature_t* sig, tbibs_public_key_with_prec
                               const uint8_t* message, size_t message_len);
 int tbibs_verify(tbibs_signature_t* sig, tbibs_public_key_t* pk, const uint8_t* message,
                  size_t message_len, uint64_t epoch, ...);
+
+size_t tbibs_public_params_write(FILE* file, tbibs_public_params_t* pp);
+size_t tbibs_public_key_write(FILE* file, tbibs_public_key_t* pk);
+size_t tbibs_secret_key_write(FILE* file, tbibs_secret_key_t* sk);
+size_t tbibs_delegated_key_write(FILE* file, tbibs_delegated_key_t* dk);
+size_t tbibs_signature_write(FILE* file, tbibs_signature_t* sig);
+
+tbibs_public_params_t* tbibs_public_params_read(FILE* file);
+size_t tbibs_public_key_read(tbibs_public_key_t* pk, FILE* file);
+size_t tbibs_secret_key_read(tbibs_secret_key_t* sk, FILE* file);
+size_t tbibs_delegated_key_read(tbibs_delegated_key_t* dk, FILE* file);
+size_t tbibs_signature_read(tbibs_signature_t* sig, FILE* file);
 
 #ifdef __cplusplus
 }
