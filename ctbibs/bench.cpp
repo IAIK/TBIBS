@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <random>
 #include <stdexcept>
@@ -41,13 +42,9 @@ int main() try {
 
   std::random_device rd;
   std::uniform_int_distribution<unsigned int> dist(0, 255);
+  std::uniform_int_distribution<uint64_t> epoch_dist(0, std::numeric_limits<uint64_t>::max());
 
   auto rand = [&dist, &rd]() { return static_cast<uint8_t>(dist(rd)); };
-
-  const uint64_t epoch = 0x123;
-  uint8_t id_1[4];
-  uint8_t id_2[8];
-  uint8_t message[16];
 
   std::shared_ptr<tbibs_delegated_key_t> dk{tbibs_delegated_key_new(pp.get()),
                                             tbibs_delegated_key_free};
@@ -70,6 +67,12 @@ int main() try {
   unsigned int verify_failures         = 0;
 
   for (unsigned int i = 0; i < REPS; ++i) {
+    const uint64_t epoch = epoch_dist(rd);
+
+    uint8_t id_1[8];
+    uint8_t id_2[16];
+    uint8_t message[32];
+
     std::generate_n(message, sizeof(message), rand);
     std::generate_n(id_1, sizeof(id_1), rand);
     std::generate_n(id_2, sizeof(id_2), rand);
@@ -114,4 +117,5 @@ int main() try {
   return 0;
 } catch (const std::exception& e) {
   std::cerr << "E: " << e.what() << std::endl;
+  return 1;
 }
