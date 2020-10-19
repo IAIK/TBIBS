@@ -49,23 +49,10 @@ int main() try {
   uint8_t id_2[8];
   uint8_t message[16];
 
-  std::generate_n(id_1, sizeof(id_1), rand);
-  std::generate_n(id_2, sizeof(id_2), rand);
-
-  std::cout << "delegating key" << std::endl;
   std::shared_ptr<tbibs_delegated_key_t> dk{tbibs_delegated_key_new(pp.get()),
                                             tbibs_delegated_key_free};
-  if (tbibs_delegate_key(dk.get(), sk.get(), epoch, id_1, sizeof(id_1), id_2, sizeof(id_2))) {
-    return -1;
-  }
-
-  std::cout << "precomputing public key" << std::endl;
   std::shared_ptr<tbibs_public_key_with_precomp_t> pkprecomp{
       tbibs_public_key_with_precomp_new(pk.get()), tbibs_public_key_with_precomp_free};
-  if (tbibs_public_key_precompute(pkprecomp.get(), epoch, id_1, sizeof(id_1), id_2, sizeof(id_2))) {
-    return -1;
-  }
-
   std::shared_ptr<tbibs_signature_t> sig{tbibs_signature_new(), tbibs_signature_free};
 
   std::cout << "benchmarking ..." << std::endl;
@@ -73,12 +60,32 @@ int main() try {
   sign_timer.stop();
   boost::timer::cpu_timer verify_timer;
   verify_timer.stop();
+  boost::timer::cpu_timer delegation_timer;
+  delegation_timer.stop();
+  boost::timer::cpu_timer precomputation_timer;
 
-  unsigned int sign_failures = 0;
-  unsigned int verify_failures = 0;
+  unsigned int delegation_failures     = 0;
+  unsigned int precomputation_failures = 0;
+  unsigned int sign_failures           = 0;
+  unsigned int verify_failures         = 0;
 
   for (unsigned int i = 0; i < REPS; ++i) {
     std::generate_n(message, sizeof(message), rand);
+    std::generate_n(id_1, sizeof(id_1), rand);
+    std::generate_n(id_2, sizeof(id_2), rand);
+
+    delegation_timer.resume();
+    if (tbibs_delegate_key(dk.get(), sk.get(), epoch, id_1, sizeof(id_1), id_2, sizeof(id_2))) {
+      ++delegation_failures;
+    }
+    delegation_timer.stop();
+
+    precomputation_timer.resume();
+    if (tbibs_public_key_precompute(pkprecomp.get(), epoch, id_1, sizeof(id_1), id_2,
+                                    sizeof(id_2))) {
+      ++precomputation_failures;
+    }
+    precomputation_timer.stop();
 
     sign_timer.resume();
     if (tbibs_sign(sig.get(), dk.get(), message, sizeof(message))) {
@@ -93,9 +100,16 @@ int main() try {
     verify_timer.stop();
   }
 
-  std::cout << "sign failures: " << sign_failures << " verify failures: " << verify_failures << "\n";
+  std::cout << "failures delegation: " << delegation_failures
+            << " precomp: " << precomputation_failures << " sign: " << sign_failures
+            << " verify: " << verify_failures << "\n";
+  std::cout << "delegation x " << REPS << ": " << delegation_timer.format(9, "%ws wall, %ts CPU")
+            << "\n";
+  std::cout << "precomputation x " << REPS << ": "
+            << precomputation_timer.format(9, "%ws wall, %ts CPU") << std::endl;
   std::cout << "sign x " << REPS << ": " << sign_timer.format(9, "%ws wall, %ts CPU") << "\n";
-  std::cout << "verify x " << REPS << ": " << verify_timer.format(9, "%ws wall, %ts CPU") << std::endl;
+  std::cout << "verify x " << REPS << ": " << verify_timer.format(9, "%ws wall, %ts CPU")
+            << std::endl;
 
   return 0;
 } catch (const std::exception& e) {
